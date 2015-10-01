@@ -82,11 +82,10 @@ public class EditorElement extends Group {
 
     public static class Data {
         public String name;
-        public EditorElement element;
-        @Override
-        public String toString() {
-            return name;
-        }
+        public String contents;
+        public float baseX, baseY;
+        public transient EditorElement element;
+        @Override public String toString() { return name; }
     }
 
 }

@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
@@ -18,6 +19,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.kotcrab.vis.ui.VisUI;
 import com.kotcrab.vis.ui.widget.*;
+
 import net.ncguy.uml.components.Panel;
 import net.ncguy.uml.drawable.Assets;
 import net.ncguy.uml.drawable.Icons;
@@ -51,12 +53,60 @@ public class MainDisplay implements Screen {
     VisList<EditorElement.Data> elementsTree;
     VisLabel camLocLbl, selObjLocLbl;
 
+    public VisDialog dataDialog;
+    public VisTable dataDialog_table;
+    public VisTextField dataDialog_name;
+    public VisImageButton dataDialog_exit;
+    public VisTextArea dataDialog_contents;
+
     @Override
     public void show() {
         VisUI.load();
         Assets.load();
         stage = new Stage(new ScreenViewport(new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight())));
         uiStage = new Stage(new ScreenViewport(new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight())));
+        dataDialog = new VisDialog("Data");
+        dataDialog_table = new VisTable(true);
+        dataDialog_name = new VisTextField("");
+        dataDialog_exit = new VisImageButton(Assets.getIcon(Icons.EXIT));
+        dataDialog_contents = new VisTextArea();
+        dataDialog_exit.addListener(new ClickListener(){
+            @Override public void clicked(InputEvent event, float x, float y) {
+                dataDialog.setVisible(false);
+            }
+        });
+        dataDialog_name.addListener(new InputListener() {
+            @Override
+            public boolean keyTyped(InputEvent event, char c) {
+                dataDialog.getTitleLabel().setText(dataDialog_name.getText());
+                if(currentElement instanceof EditorElement) {
+                    EditorElement e = (EditorElement)currentElement;
+                    e.data.name = dataDialog_name.getText();
+                }
+                return false;
+            }
+        });
+        dataDialog_contents.addListener(new InputListener() {
+            @Override public boolean keyTyped(InputEvent event, char c) {
+                if(currentElement instanceof EditorElement) {
+                    EditorElement e = (EditorElement)currentElement;
+                    e.data.contents = dataDialog_contents.getText();
+                }
+                return false;
+            }
+        });
+        dataDialog.getTitleTable().add(dataDialog_exit);
+        dataDialog_table.defaults().padLeft(5).padRight(5);
+        dataDialog_table.add(new VisLabel("Element Name: "));
+        dataDialog_table.add(dataDialog_name).width(400);
+        dataDialog_table.row();
+        dataDialog_table.addSeparator().colspan(2);
+        dataDialog_table.row();
+        dataDialog_table.add(dataDialog_contents).colspan(2).fillX().height(400);
+//        dataDialog_table.add(dataDialog_contents).colspan(2).expandX().width(600).height(400);
+        dataDialog_table.setFillParent(true);
+//        dataDialog_table.setBounds(0, 0, dataDialog.getH);
+        dataDialog.addActor(dataDialog_table);
         uiStageOffset = new Vector2();
         elements = new Array<>();
         vertLeft = new Separator(true);
@@ -76,12 +126,24 @@ public class MainDisplay implements Screen {
                 if(elementsTree.getSelected().element == null) return;
                 currentElement = elementsTree.getSelected().element;
                 controller.onAllocate(elementsTree.getSelected().element);
+
+                if(getTapCount() < 2) return;
+                if(currentElement == null) return;
+                if(currentElement instanceof EditorElement) {
+                    EditorElement e = (EditorElement)currentElement;
+                    dataDialog.getTitleLabel().setText(e.data.name);
+                    dataDialog_name.setText(e.data.name);
+                    dataDialog_contents.setText(e.data.contents);
+                    dataDialog.setBounds(100, 100, Gdx.graphics.getWidth()-200, Gdx.graphics.getHeight()-200);
+                    dataDialog.setVisible(true);
+                }
             }
         });
         buttonTable = new VisTable(true);
         buttonScroll = new VisScrollPane(buttonTable);
 
         buttonScroll.setBounds(5, elementsTree.getY()-155, leftPaneWidth-10, 150);
+        dataDialog.setVisible(false);
 
         stage.addActor(leftPanelBg);
         stage.addActor(buttonScroll);
@@ -90,6 +152,7 @@ public class MainDisplay implements Screen {
         stage.addActor(horzRight);
         stage.addActor(camLocLbl);
         stage.addActor(selObjLocLbl);
+        stage.addActor(dataDialog);
 
         addButton(delElementBtn);
 
@@ -169,7 +232,7 @@ public class MainDisplay implements Screen {
             selObjLocLbl.setPosition(Gdx.graphics.getWidth() - selObjLocLbl.getWidth(), Gdx.graphics.getHeight() - selObjLocLbl.getHeight()-(camLocLbl.getHeight()));
         }
 
-        stage.setDebugAll(true);
+        stage.setDebugAll(false);
         stage.act(delta);
         stage.draw();
 

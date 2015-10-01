@@ -6,6 +6,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.DragListener;
 import net.ncguy.uml.UMLLauncher;
 import net.ncguy.uml.components.CornerActor;
@@ -39,7 +40,7 @@ public class ElementController extends Actor {
         points = new Vector2[PointIndex.values().length];
         cornerActors = new CornerActor[points.length];
         lines = new LineActor[points.length];
-//        addListener(new ObjectDragListener());
+        addListener(new OpenDataDialog(this));
     }
 
     public void onAllocate(Actor element) {
@@ -208,6 +209,26 @@ public class ElementController extends Actor {
             }
         }
         return originKey;
+    }
+
+    public static class OpenDataDialog extends ClickListener {
+        ElementController ctrl;
+        public OpenDataDialog(ElementController ctrl) {
+            super();
+            this.ctrl = ctrl;
+        }
+        @Override public void clicked(InputEvent event, float x, float y) {
+            if(getTapCount() < 2) return;
+            if(ctrl.parent.currentElement == null) return;
+            if(ctrl.parent.currentElement instanceof EditorElement) {
+                EditorElement e = (EditorElement)ctrl.parent.currentElement;
+                ctrl.parent.dataDialog.getTitleLabel().setText(e.data.name);
+                ctrl.parent.dataDialog_name.setText(e.data.name);
+                ctrl.parent.dataDialog_contents.setText(e.data.contents);
+                ctrl.parent.dataDialog.setBounds(100, 100, Gdx.graphics.getWidth()-200, Gdx.graphics.getHeight()-200);
+                ctrl.parent.dataDialog.setVisible(true);
+            }
+        }
     }
 
     public static class ObjectDragListener extends DragListener {
