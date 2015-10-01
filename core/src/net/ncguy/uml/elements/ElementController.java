@@ -8,7 +8,9 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.DragListener;
+import com.kotcrab.vis.ui.widget.VisTable;
 import net.ncguy.uml.UMLLauncher;
+import net.ncguy.uml.api.IConfigurable;
 import net.ncguy.uml.components.CornerActor;
 import net.ncguy.uml.components.LineActor;
 import net.ncguy.uml.display.MainDisplay;
@@ -75,6 +77,18 @@ public class ElementController extends Actor {
         }
         setupLines();
         setupCorners();
+        updateConfigTable();
+        assertBody();
+    }
+
+    public void updateConfigTable() {
+        parent.dataDialog_configTable.clearChildren();
+        if(controlledElement == null) return;
+        if(controlledElement instanceof IConfigurable) {
+            parent.dataDialog_configTable.add(((IConfigurable)controlledElement).getConfigTable());
+        }else{
+            parent.dataDialog_configTable.add(new VisTable(true));
+        }
     }
 
     public ElementController addedToStage(Stage stage) {

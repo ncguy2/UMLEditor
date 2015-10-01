@@ -32,7 +32,6 @@ public class LineActor extends Actor {
         this.ctrl = ctrl;
         sprite = new Sprite(Sprites.pixel);
         colour = Color.CYAN;
-
     }
 
     public void setBounds(Rectangle rect) {
@@ -77,7 +76,7 @@ public class LineActor extends Actor {
             LineActor opposite = self.ctrl.lines[key.opposite()];
             if(self.getWidth() > self.getHeight()) {
                 float y = Gdx.graphics.getHeight() - Gdx.input.getY();
-                float modY = (y - self.getOriginY())+self.ctrl.parent.uiStageOffset.y;
+                float modY = (y - self.getOriginY());
                 if(key.name().toLowerCase().contains("top")) {
                 if(modY < opposite.getY()+self.ctrl.halfCornerSize)
                     modY = opposite.getY()+self.ctrl.halfCornerSize;
@@ -88,11 +87,7 @@ public class LineActor extends Actor {
                 self.a1.setY(modY);
             }else{
                 float x = Gdx.input.getX();
-                float modX = (x - self.getOriginX())+self.ctrl.parent.uiStageOffset.x;
-                System.out.println("ModX: "+modX+" >>");
-                System.out.println("\tX: "+x);
-                System.out.println("\tOriginX: "+self.getOriginX());
-                System.out.println("\tOffsetX: "+self.ctrl.parent.uiStageOffset.x);
+                float modX = (x - self.getOriginX());
                 if(key.name().toLowerCase().contains("left")) {
                     if(modX > opposite.getX()-self.ctrl.halfCornerSize)
                         modX = opposite.getX()-self.ctrl.halfCornerSize;

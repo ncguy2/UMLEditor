@@ -1,32 +1,74 @@
 package net.ncguy.uml.elements;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.utils.Array;
 import com.kotcrab.vis.ui.widget.VisLabel;
+import com.kotcrab.vis.ui.widget.VisSelectBox;
+import com.kotcrab.vis.ui.widget.VisTable;
 import net.ncguy.uml.UMLLauncher;
+import net.ncguy.uml.api.IConfigurable;
+import net.ncguy.uml.elements.data.LineData;
+import net.ncguy.uml.global.AnchorPoints;
+
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 
 /**
  * Created by Nick on 30/09/2015 at 20:58,
  * Project: UMLEditor.
  */
-public class EditorElement extends Group {
+public class EditorElement extends Group implements IConfigurable {
+
+    public static AnchorPoints anchorPoints = new AnchorPoints();
 
     Sprite sprite;
     public Vector2 baseLocation;
     VisLabel baseLocationLbl;
     public Data data;
+    public ArrayList<LineData> linedata;
 
     public EditorElement() {
-        sprite = new Sprite(new Texture("assets/badlogic.jpg"));
+        sprite = new Sprite(new Texture("assets/components/generic.png"));
+        setSize(sprite.getWidth(), sprite.getHeight());
         baseLocation = new Vector2();
         baseLocationLbl = new VisLabel();
+        linedata = new ArrayList<>();
         data = new Data();
         data.name = this.getClass().getSimpleName()+" : "+this.hashCode();
         data.element = this;
+        data.type = ElementTypes.GENERIC;
+        data.lineData = new ArrayList<>();
         addActor(baseLocationLbl);
+    }
+
+    public LineData addLine() {
+        LineData line = new LineData();
+        line.localAnchor = anchorPoints.points[AnchorPoints.AnchorIndex.MID.ordinal()];
+        line.parentActor = this;
+        linedata.add(line);
+        return line;
+    }
+    public void loadLine(LineData line) {
+        line.parentActor = this;
+        for(EditorElement e : UMLLauncher.instance.display.elements) {
+            if(e.data.name.equalsIgnoreCase(line.remoteActorName)) {
+                line.remoteActor = e;
+                break;
+            }
+        }
+        linedata.add(line);
+    }
+
+    public void loadLinesFromData() {
+        if(data.lineData == null) return;
+        for(LineData line : data.lineData) {
+            loadLine(line);
+        }
     }
 
     public void setBasePosition(float x, float y) {
@@ -56,18 +98,31 @@ public class EditorElement extends Group {
 
     @Override
     public void draw(Batch batch, float alpha) {
+        if(data.lineData == null) {
+            data.lineData = new ArrayList<>();
+        }
+        for(LineData line : data.lineData) {
+            line.draw(batch, alpha);
+        }
         sprite.setBounds(getX(), getY(), getWidth(), getHeight());
         sprite.draw(batch, alpha);
         baseLocationLbl.setText(String.format("X: %s\nY: %s", baseLocation.x, baseLocation.y));
         super.draw(batch, alpha);
     }
 
-//    @Override public float getX() {
-//        return baseLocation.x + UMLLauncher.instance.display.uiStageOffset.x;
-//    }
-//    @Override public float getY() {
-//        return baseLocation.y + UMLLauncher.instance.display.uiStageOffset.y;
-//    }
+    public void prepareData() {
+        data.baseX = baseLocation.x;
+        data.baseY = baseLocation.y;
+        data.baseW = getWidth();
+        data.baseH = getHeight();
+        data.colour = new Color();
+        data.lineData = new ArrayList<>();
+        for(LineData line : linedata) {
+
+            line.remoteActorName = line.remoteActor.data.name;
+            data.lineData.add(line);
+        }
+    }
 
     public float getBaseX() { return baseLocation.x; }
     public float getBaseY() { return baseLocation.y; }
@@ -80,12 +135,51 @@ public class EditorElement extends Group {
         setY(baseLocation.y + offset.y);
     }
 
+    @Override
+    public VisTable getConfigTable() {
+        VisTable cfgTable = new VisTable(true);
+
+        VisSelectBox<LineData> linedata = new VisSelectBox<>();
+        Array<LineData> lines = new Array<>();
+        for(LineData line : this.linedata)
+            lines.add(line);
+        linedata.setItems(lines);
+        cfgTable.add(linedata);
+
+        return cfgTable;
+    }
+
     public static class Data {
         public String name;
+        public Color colour;
         public String contents;
+        public ElementTypes type;
+        public ArrayList<LineData> lineData;
+
         public float baseX, baseY;
+        public float baseW, baseH;
         public transient EditorElement element;
         @Override public String toString() { return name; }
+    }
+
+    public enum ElementTypes {
+        GENERIC(EditorElement.class),
+        ACTOR(ActorElement.class),
+        ;
+        private ElementTypes(Class clazz) {
+            try{
+                ctor = clazz.getConstructor();
+            }catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        transient Constructor ctor;
+
+        public Constructor getCtor() {
+            return ctor;
+        }
+
     }
 
 }
