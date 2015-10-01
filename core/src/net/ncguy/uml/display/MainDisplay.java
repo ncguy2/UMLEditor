@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Vector2;
@@ -18,6 +19,8 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.kotcrab.vis.ui.VisUI;
 import com.kotcrab.vis.ui.widget.Separator;
 import com.kotcrab.vis.ui.widget.VisImageButton;
+import com.kotcrab.vis.ui.widget.VisLabel;
+import net.ncguy.uml.components.Panel;
 import net.ncguy.uml.elements.EditorElement;
 import net.ncguy.uml.elements.ElementController;
 
@@ -40,6 +43,10 @@ public class MainDisplay implements Screen {
 
     float leftPaneWidth = 150;
 
+    Panel rightPanelBg;
+
+    VisLabel modXLbl, modYLbl;
+
     @Override
     public void show() {
         VisUI.load();
@@ -51,13 +58,22 @@ public class MainDisplay implements Screen {
         delElementBtn = new VisImageButton(new TextureRegionDrawable());
         controller = new ElementController(this);
         vertLeft.setBounds(leftPaneWidth, 0, 5, Gdx.graphics.getHeight());
+        rightPanelBg = new Panel(new Color(.4f, .4f, .4f, 1));
+        rightPanelBg.setBounds(0, 0, leftPaneWidth, Gdx.graphics.getHeight());
+        stage.addActor(rightPanelBg);
         stage.addActor(vertLeft);
 
+        modXLbl = new VisLabel();
+        modYLbl = new VisLabel();
+
+        stage.addActor(modXLbl);
+        stage.addActor(modYLbl);
+
         elements.add(new EditorElement());
-        elements.add(new EditorElement());
-        elements.add(new EditorElement());
-        elements.add(new EditorElement());
-        elements.add(new EditorElement());
+//        elements.add(new EditorElement());
+//        elements.add(new EditorElement());
+//        elements.add(new EditorElement());
+//        elements.add(new EditorElement());
 
         uiStage.addListener(new DragListener() {
             boolean valid = false;
@@ -66,21 +82,24 @@ public class MainDisplay implements Screen {
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                 valid = button == Input.Buttons.RIGHT;
-                initX = uiStageOffset.x;
-                initY = uiStageOffset.y;
+                initX = x;
+                initY = y;
                 return true;
             }
             @Override
             public void touchDragged(InputEvent event, float x, float y, int pointer) {
                 if(!valid) return;
-                System.out.println(Gdx.input.getDeltaX());
-                float modX = initX+(Gdx.input.getDeltaX()*scalar);
-                float modY = initY+((-Gdx.input.getDeltaY())*scalar);
+                scalar = 1f;
+                float modX = uiStageOffset.x+( (Gdx.input.getDeltaX())*scalar);
+                float modY = uiStageOffset.y+(-(Gdx.input.getDeltaY())*scalar);
+                System.out.println("MainDisplay.touchDragged >>");
+                System.out.println("\tModX: "+modX);
+                System.out.println("\tModY: " + modY);
                 uiStageOffset.set(modX, modY);
                 for(EditorElement editorElement : elements) {
                     editorElement.redraw(uiStageOffset);
                 }
-                controller.assertBody();
+                controller.assertBody(false);
 
             }
         });
@@ -96,8 +115,6 @@ public class MainDisplay implements Screen {
 //        uiStage.setBounds(leftPaneWidth, 0, Gdx.graphics.getWidth()-leftPaneWidth, Gdx.graphics.getHeight());
 //        stage.addActor(uiPane);
 
-
-
         InputMultiplexer multiplexer = new InputMultiplexer();
         multiplexer.addProcessor(stage);
         multiplexer.addProcessor(uiStage);
@@ -112,10 +129,23 @@ public class MainDisplay implements Screen {
         uiStage.act(delta);
         uiStage.draw();
         uiStage.setDebugAll(true);
-        stage.setDebugAll(false);
+
+        rightPanelBg.setBounds(0, 0, leftPaneWidth, Gdx.graphics.getHeight());
+
+        stage.setDebugAll(true);
         stage.act(delta);
         stage.draw();
 
+        if(currentElement != null) {
+            if(currentElement instanceof EditorElement) {
+                EditorElement e = (EditorElement)currentElement;
+                modXLbl.setText(String.format("ActorX: %s | OffsetX: %s", e.baseLocation.x, uiStageOffset.x));
+                modYLbl.setText(String.format("ActorY: %s | OffsetY: %s", e.baseLocation.y, uiStageOffset.y));
+            }
+        }
+
+        modXLbl.setPosition(10, 100);
+        modYLbl.setPosition(10, 80);
     }
 
     @Override

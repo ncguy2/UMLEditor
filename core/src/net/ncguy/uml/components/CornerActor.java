@@ -16,12 +16,14 @@ public class CornerActor extends Actor {
 
     public ElementController controller;
     public int size;
+    public Color colour;
 
     public CornerActor(ElementController controller, int size) {
         super();
         sprite = new Sprite(new Texture("assets/corner.png"));
         this.controller = controller;
         this.size = size;
+        this.colour = Color.CYAN;
     }
 
     Sprite sprite;
@@ -32,7 +34,7 @@ public class CornerActor extends Actor {
 
     @Override
     public void draw(Batch batch, float alpha) {
-        sprite.setColor(Color.CYAN);
+        sprite.setColor(colour);
         sprite.setBounds(getX(), getY(), size, size);
         sprite.draw(batch, alpha);
     }

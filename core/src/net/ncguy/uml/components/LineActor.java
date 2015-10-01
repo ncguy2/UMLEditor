@@ -30,7 +30,7 @@ public class LineActor extends Actor {
         this.a1 = a1;
         this.a2 = a2;
         this.ctrl = ctrl;
-        sprite = Sprites.pixel;
+        sprite = new Sprite(Sprites.pixel);
         colour = Color.CYAN;
 
     }
@@ -47,7 +47,7 @@ public class LineActor extends Actor {
 
     @Override
     public void draw(Batch batch, float alpha) {
-        Helpers.lineDraw(Sprites.pixel, batch, colour,
+        Helpers.lineDraw(sprite, batch, colour,
                 a1.getX() + ctrl.halfCornerSize, a1.getY() + ctrl.halfCornerSize,
                 a2.getX() + ctrl.halfCornerSize, a2.getY() + ctrl.halfCornerSize,
                 1);
@@ -104,28 +104,6 @@ public class LineActor extends Actor {
             }
             if(self.a1 instanceof CornerActor)
                 self.ctrl.assertPoints((CornerActor)self.a1);
-//            float x = Gdx.input.getX();
-//            float y = Gdx.graphics.getHeight() - Gdx.input.getY();
-//            float modX = (x - c.getOriginX())+parent.uiStageOffset.x;
-//            float modY = (y - c.getOriginY())+parent.uiStageOffset.y;
-//            PointIndex key = controller.getKeyOfCorner(c);
-//            CornerActor opposite = controller.cornerActors[key.oppositeOrdinal];
-//            if(key.name().toLowerCase().contains("left")) {
-//                if(modX > opposite.getX()-controller.halfCornerSize)
-//                    modX = opposite.getX()-controller.halfCornerSize;
-//            }else{
-//                if(modX < opposite.getX()+controller.halfCornerSize)
-//                    modX = opposite.getX()+controller.halfCornerSize;
-//            }
-//            if(key.name().toLowerCase().contains("top")) {
-//                if(modY < opposite.getY()+controller.halfCornerSize)
-//                    modY = opposite.getY()+controller.halfCornerSize;
-//            }else{
-//                if(modY > opposite.getY()-controller.halfCornerSize)
-//                    modY = opposite.getY()-controller.halfCornerSize;
-//            }
-//            c.setX(modX);
-//            c.setY(modY);
         }
     }
 

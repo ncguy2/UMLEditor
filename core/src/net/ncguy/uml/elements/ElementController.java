@@ -7,9 +7,11 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.utils.DragListener;
+import net.ncguy.uml.UMLLauncher;
 import net.ncguy.uml.components.CornerActor;
 import net.ncguy.uml.components.LineActor;
 import net.ncguy.uml.display.MainDisplay;
+
 import static net.ncguy.uml.elements.ElementController.PointIndex.*;
 
 /**
@@ -53,6 +55,11 @@ public class ElementController extends Actor {
 
         setBounds(element.getX(), element.getY(), element.getWidth(), element.getHeight());
 
+//        if(element instanceof EditorElement) {
+//            Vector2 o = UMLLauncher.instance.display.uiStageOffset;
+//            ((EditorElement) element).setBasePosition(element.getX()-o.x, element.getY()-o.y);
+//        }
+
         for(PointIndex key : PointIndex.values()) {
             CornerActor actor;
             if(cornerActors[key.ordinal()] == null) {
@@ -79,6 +86,7 @@ public class ElementController extends Actor {
         for(CornerActor a : cornerActors) {
             this.stage.addActor(a);
         }
+        cornersAdded = true;
     }
     public void setupLines() {
         lines[BOTLEFT.ordinal()] = new LineActor(cornerActors[BOTLEFT.ordinal()], cornerActors[TOPLEFT.ordinal()], this);
@@ -117,14 +125,32 @@ public class ElementController extends Actor {
         }
     }
 
-    public void assertBody() {
-        
+    public void assertBody() { assertBody(true); }
+    public void assertBody(boolean updateElement) {
         Actor e = controlledElement;
+        if(e == null) return;
+
         cornerActors[BOTLEFT.ordinal()].setPosition(e.getX()-halfCornerSize,               e.getY()-halfCornerSize);
-        cornerActors[BOTRIGHT.ordinal()].setPosition(e.getX()+e.getWidth()-halfCornerSize, e.getY()-halfCornerSize);
-        cornerActors[TOPLEFT.ordinal()].setPosition(e.getX()-halfCornerSize,               e.getY()+e.getHeight()-halfCornerSize);
-        cornerActors[TOPRIGHT.ordinal()].setPosition(e.getX()+e.getWidth()-halfCornerSize, e.getY()+e.getHeight()-halfCornerSize);
+        cornerActors[BOTRIGHT.ordinal()].setPosition(e.getX() + e.getWidth() - halfCornerSize, e.getY() - halfCornerSize);
+        cornerActors[TOPLEFT.ordinal()].setPosition(e.getX() - halfCornerSize, e.getY() + e.getHeight() - halfCornerSize);
+        cornerActors[TOPRIGHT.ordinal()].setPosition(e.getX() + e.getWidth() - halfCornerSize, e.getY() + e.getHeight() - halfCornerSize);
+
         setBounds(e.getX(), e.getY(), e.getWidth(), e.getHeight());
+
+//        setBounds(element.getX(), element.getY(), element.getWidth(), element.getHeight());
+
+        if(updateElement) {
+            if(controlledElement instanceof EditorElement) {
+                Vector2 o = UMLLauncher.instance.display.uiStageOffset;
+                System.out.println("PreChangeBounds: " + ((EditorElement) controlledElement).baseLocation);
+                ((EditorElement) controlledElement).setBasePosition(getX() - o.x, getY() - o.y);
+                System.out.println("PostChangeBounds: " + ((EditorElement) controlledElement).baseLocation);
+//                ((EditorElement) controlledElement).redraw(o);
+            }else{
+                System.out.println("ControlledElement is not an instance of EditorElement");
+            }
+        }
+
     }
 
     public void assertPoints(CornerActor origin) {
@@ -163,7 +189,14 @@ public class ElementController extends Actor {
         setWidth(w);
         setHeight(h);
 
-        controlledElement.setBounds(getX(), getY(), getWidth(), getHeight());
+        controlledElement.setSize(w, h);
+
+        if(controlledElement instanceof EditorElement){
+            Vector2 o = UMLLauncher.instance.display.uiStageOffset;
+            ((EditorElement)controlledElement).setBasePosition(getX()-o.x, getY()-o.y);
+        }else{
+            controlledElement.setPosition(getX(), getY());
+        }
     }
 
     public PointIndex getKeyOfCorner(CornerActor corner) {
@@ -198,12 +231,16 @@ public class ElementController extends Actor {
         public void touchDragged(InputEvent event1, float x1, float y1, int pointer) {
             float x = Gdx.input.getX();
             float y = Gdx.graphics.getHeight() - Gdx.input.getY();
-            float modX = (x - a.getOriginX())+parent.uiStageOffset.x;
-            float modY = (y - a.getOriginY())+parent.uiStageOffset.y;
-//            if(modX < container.getX())
-//                modX = container.getX();
-            a.setX(modX);
-            a.setY(modY);
+            float modX = (x - a.getOriginX())-parent.uiStageOffset.x;
+            float modY = (y - a.getOriginY())-parent.uiStageOffset.y;
+            if(a instanceof EditorElement){
+                EditorElement e = (EditorElement)a;
+                e.setBaseX(modX);
+                e.setBaseY(modY);
+            }else{
+                a.setX(modX);
+                a.setY(modY);
+            }
             controller.assertBody();
         }
         @Override
@@ -234,8 +271,8 @@ public class ElementController extends Actor {
         public void touchDragged(InputEvent event1, float x1, float y1, int pointer) {
             float x = Gdx.input.getX();
             float y = Gdx.graphics.getHeight() - Gdx.input.getY();
-            float modX = (x - c.getOriginX())+parent.uiStageOffset.x;
-            float modY = (y - c.getOriginY())+parent.uiStageOffset.y;
+            float modX = (x - c.getOriginX());
+            float modY = (y - c.getOriginY());
             PointIndex key = controller.getKeyOfCorner(c);
             CornerActor opposite = controller.cornerActors[key.oppositeOrdinal];
             if(key.name().toLowerCase().contains("left")) {
