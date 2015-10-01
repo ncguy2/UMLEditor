@@ -17,11 +17,15 @@ public class EditorElement extends Group {
     Sprite sprite;
     public Vector2 baseLocation;
     VisLabel baseLocationLbl;
+    public Data data;
 
     public EditorElement() {
         sprite = new Sprite(new Texture("assets/badlogic.jpg"));
         baseLocation = new Vector2();
         baseLocationLbl = new VisLabel();
+        data = new Data();
+        data.name = this.getClass().getSimpleName()+" : "+this.hashCode();
+        data.element = this;
         addActor(baseLocationLbl);
     }
 
@@ -75,4 +79,14 @@ public class EditorElement extends Group {
         setX(baseLocation.x + offset.x);
         setY(baseLocation.y + offset.y);
     }
+
+    public static class Data {
+        public String name;
+        public EditorElement element;
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
+
 }

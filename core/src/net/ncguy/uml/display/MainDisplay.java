@@ -11,16 +11,16 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.DragListener;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.kotcrab.vis.ui.VisUI;
-import com.kotcrab.vis.ui.widget.Separator;
-import com.kotcrab.vis.ui.widget.VisImageButton;
-import com.kotcrab.vis.ui.widget.VisLabel;
+import com.kotcrab.vis.ui.widget.*;
 import net.ncguy.uml.components.Panel;
+import net.ncguy.uml.drawable.Assets;
+import net.ncguy.uml.drawable.Icons;
 import net.ncguy.uml.elements.EditorElement;
 import net.ncguy.uml.elements.ElementController;
 
@@ -32,48 +32,74 @@ public class MainDisplay implements Screen {
 
     Stage stage, uiStage;
 
+    VisTable buttonTable;
+    VisScrollPane buttonScroll;
+
     public Array<EditorElement> elements;
     public Actor currentElement;
     public ElementController controller;
 
     public Vector2 uiStageOffset;
 
-    public Separator vertLeft;
+    public Separator vertLeft, horzRight;
     public VisImageButton delElementBtn;
 
-    float leftPaneWidth = 150;
+    float leftPaneWidth = 250;
 
-    Panel rightPanelBg;
+    Panel leftPanelBg;
 
-    VisLabel modXLbl, modYLbl;
+    VisList<EditorElement.Data> elementsTree;
+    VisLabel camLocLbl, selObjLocLbl;
 
     @Override
     public void show() {
         VisUI.load();
+        Assets.load();
         stage = new Stage(new ScreenViewport(new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight())));
         uiStage = new Stage(new ScreenViewport(new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight())));
         uiStageOffset = new Vector2();
         elements = new Array<>();
         vertLeft = new Separator(true);
-        delElementBtn = new VisImageButton(new TextureRegionDrawable());
+        horzRight = new Separator(false);
+        delElementBtn = new VisImageButton(Assets.getIcon(Icons.WARNING));
         controller = new ElementController(this);
         vertLeft.setBounds(leftPaneWidth, 0, 5, Gdx.graphics.getHeight());
-        rightPanelBg = new Panel(new Color(.4f, .4f, .4f, 1));
-        rightPanelBg.setBounds(0, 0, leftPaneWidth, Gdx.graphics.getHeight());
-        stage.addActor(rightPanelBg);
+        leftPanelBg = new Panel(new Color(.4f, .4f, .4f, 1));
+        leftPanelBg.setBounds(0, 0, leftPaneWidth, Gdx.graphics.getHeight());
+        camLocLbl = new VisLabel();
+        selObjLocLbl = new VisLabel();
+        elementsTree = new VisList<>();
+        elementsTree.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if(elementsTree.getSelected() == null) return;
+                if(elementsTree.getSelected().element == null) return;
+                currentElement = elementsTree.getSelected().element;
+                controller.onAllocate(elementsTree.getSelected().element);
+            }
+        });
+        buttonTable = new VisTable(true);
+        buttonScroll = new VisScrollPane(buttonTable);
+
+        buttonScroll.setBounds(5, elementsTree.getY()-155, leftPaneWidth-10, 150);
+
+        stage.addActor(leftPanelBg);
+        stage.addActor(buttonScroll);
+        stage.addActor(elementsTree);
         stage.addActor(vertLeft);
+        stage.addActor(horzRight);
+        stage.addActor(camLocLbl);
+        stage.addActor(selObjLocLbl);
 
-        modXLbl = new VisLabel();
-        modYLbl = new VisLabel();
-
-        stage.addActor(modXLbl);
-        stage.addActor(modYLbl);
+        addButton(delElementBtn);
 
         elements.add(new EditorElement());
-//        elements.add(new EditorElement());
-//        elements.add(new EditorElement());
-//        elements.add(new EditorElement());
-//        elements.add(new EditorElement());
+        elements.add(new EditorElement());
+        elements.add(new EditorElement());
+        elements.add(new EditorElement());
+        elements.add(new EditorElement());
+
+        regrowTree();
 
         uiStage.addListener(new DragListener() {
             boolean valid = false;
@@ -105,7 +131,7 @@ public class MainDisplay implements Screen {
         });
 
         for(EditorElement e : elements) {
-            e.setBounds(200, 100, 100, 100);
+            e.setBounds(leftPaneWidth+50, 100, 100, 100);
             uiStage.addActor(e);
             e.addListener(new SelectionListener(e, this));
 //            e.addListener(new ObjectDragListener(uiStage.getRoot(), e, this));
@@ -128,28 +154,37 @@ public class MainDisplay implements Screen {
         Gdx.gl.glClearColor(.2f, .2f, .2f, 1);
         uiStage.act(delta);
         uiStage.draw();
-        uiStage.setDebugAll(true);
+        uiStage.setDebugAll(false);
 
-        rightPanelBg.setBounds(0, 0, leftPaneWidth, Gdx.graphics.getHeight());
+        leftPanelBg.setBounds(0, 0, leftPaneWidth, Gdx.graphics.getHeight());
+
+        camLocLbl.setText(String.format("X: %s\nY: %s", uiStageOffset.x, uiStageOffset.y));
+        camLocLbl.pack();
+        camLocLbl.setPosition(Gdx.graphics.getWidth() - camLocLbl.getWidth(), Gdx.graphics.getHeight() - camLocLbl.getHeight());
+        horzRight.setBounds(camLocLbl.getX(), camLocLbl.getY(), camLocLbl.getWidth(), 5);
+        if(currentElement instanceof EditorElement) {
+            EditorElement e = (EditorElement)currentElement;
+            selObjLocLbl.setText(String.format("X: %s\nY: %s", e.getBaseX()+(Gdx.graphics.getWidth()/2), e.getBaseY()+(Gdx.graphics.getHeight()/2)));
+            selObjLocLbl.pack();
+            selObjLocLbl.setPosition(Gdx.graphics.getWidth() - selObjLocLbl.getWidth(), Gdx.graphics.getHeight() - selObjLocLbl.getHeight()-(camLocLbl.getHeight()));
+        }
 
         stage.setDebugAll(true);
         stage.act(delta);
         stage.draw();
 
-        if(currentElement != null) {
-            if(currentElement instanceof EditorElement) {
-                EditorElement e = (EditorElement)currentElement;
-                modXLbl.setText(String.format("ActorX: %s | OffsetX: %s", e.baseLocation.x, uiStageOffset.x));
-                modYLbl.setText(String.format("ActorY: %s | OffsetY: %s", e.baseLocation.y, uiStageOffset.y));
-            }
-        }
-
-        modXLbl.setPosition(10, 100);
-        modYLbl.setPosition(10, 80);
     }
 
     @Override
     public void resize(int width, int height) {
+        stage.getViewport().update(width, height, true);
+        stage.getCamera().update(true);
+        uiStage.getViewport().update(width, height, true);
+        uiStage.getCamera().update(true);
+
+        leftPanelBg.setBounds(0, 0, leftPaneWidth, Gdx.graphics.getHeight());
+        vertLeft.setBounds(leftPaneWidth, 3, 5, Gdx.graphics.getHeight() - 6);
+        regrowTree();
 
     }
 
@@ -173,6 +208,26 @@ public class MainDisplay implements Screen {
 
     }
 
+    public void regrowTree() {
+        EditorElement.Data[] data = new EditorElement.Data[elements.size];
+        int index = 0;
+        for(EditorElement e : elements) {
+            data[index] = e.data;
+            index++;
+        }
+        elementsTree.setItems(data);
+        elementsTree.setBounds(5, 250, leftPaneWidth-10, Gdx.graphics.getHeight()-250);
+        buttonScroll.setBounds(5, elementsTree.getY()-155, leftPaneWidth-10, 150);
+    }
+
+    int index = 0;
+    public void addButton(Button btn) {
+        buttonTable.add(btn);
+        index++;
+        if(index % 4 == 0)
+            buttonTable.row();
+    }
+
     public void changeActiveActor(Actor a) {
         currentElement = a;
     }
@@ -188,7 +243,9 @@ public class MainDisplay implements Screen {
 
         @Override
         public void clicked(InputEvent event, float x, float y) {
-            parent.currentElement = element;
+            if(parent.currentElement != element)
+                parent.currentElement = element;
+            parent.elementsTree.setSelectedIndex(-1);
             parent.controller.onAllocate(element);
         }
 
