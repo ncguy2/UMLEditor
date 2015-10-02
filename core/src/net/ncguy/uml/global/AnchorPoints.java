@@ -1,44 +1,40 @@
 package net.ncguy.uml.global;
 
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.Actor;
-
-import static net.ncguy.uml.global.AnchorPoints.AnchorIndex.*;
 
 /**
  * Created by Nick on 01/10/2015 at 21:08,
  * Project: UMLEditor.
  */
-public class AnchorPoints {
+public enum AnchorPoints {
+    TOPLEFT(0, 1),      TOP(.5f, 1),    TOPRIGHT(1, 1),
+    MIDLEFT(0, .5f),    MID(.5f, .5f),  MIDRIGHT(1,.5f),
+    BOTLEFT(0, 0),      BOT(.5f, 0),    BOTRIGHT(1, 0),
+    ;
 
-    public Vector2[] points;
-
-    public AnchorPoints() {
-        points = new Vector2[AnchorIndex.values().length];
-
-        points[TOPLEFT.ordinal()]   = new Vector2(0,     1);
-        points[TOP.ordinal()]       = new Vector2(.5f,   1);
-        points[TOPRIGHT.ordinal()]  = new Vector2(1,     1);
-        points[MIDLEFT.ordinal()]   = new Vector2(0,     .5f);
-        points[MID.ordinal()]       = new Vector2(.5f,   .5f);
-        points[MIDRIGHT.ordinal()]  = new Vector2(1,     .5f);
-        points[BOTLEFT.ordinal()]   = new Vector2(0,     0);
-        points[BOT.ordinal()]       = new Vector2(.5f,   0);
-        points[BOTRIGHT.ordinal()]  = new Vector2(1,     0);
+    AnchorPoints(float x, float y) {
+        this.x = x;
+        this.y = y;
     }
 
-    public Vector2 getAnchorPointOfActor(AnchorIndex anchor, Actor a) {
-        Vector2 pos = new Vector2();
-        pos.x = a.getX()+(a.getWidth()*points[anchor.ordinal()].x);
-        pos.y = a.getY()+(a.getHeight()*points[anchor.ordinal()].y);
-        return pos;
+    float x, y;
+
+    public Vector2 offset() {
+        return new Vector2(x, y);
     }
 
-    public enum AnchorIndex {
-        TOPLEFT, TOP, TOPRIGHT,
-        MIDLEFT, MID, MIDRIGHT,
-        BOTLEFT, BOT, BOTRIGHT,
-        ;
+    public static AnchorPoints getPointFromValues(float x, float y) {
+        for(AnchorPoints point : values()) {
+            if(x >= (point.x-.25f) && x < (point.x+.25f)) {
+                if(y >= (point.y-.25f) && y < (point.y+.25f)) {
+                    return point;
+                }
+            }
+        }
+        return MID;
+    }
+    public static AnchorPoints getPointFromVector(Vector2 pos) {
+        return getPointFromValues(pos.x, pos.y);
     }
 
 }

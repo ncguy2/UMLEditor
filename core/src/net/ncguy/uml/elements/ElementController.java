@@ -46,6 +46,11 @@ public class ElementController extends Actor {
     public void onAllocate(Actor element) {
         halfCornerSize = cornerSize/2;
         controlledElement = element;
+
+        if(element instanceof EditorElement) {
+            parent.lineDialog.changeElement((EditorElement) element);
+        }
+
         if(getListeners().contains(dragListener, true))
             removeListener(dragListener);
         addListener(dragListener = new ObjectDragListener(this, element, parent));

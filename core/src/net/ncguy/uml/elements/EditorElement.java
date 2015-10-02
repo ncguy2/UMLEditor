@@ -24,8 +24,6 @@ import java.util.ArrayList;
  */
 public class EditorElement extends Group implements IConfigurable {
 
-    public static AnchorPoints anchorPoints = new AnchorPoints();
-
     Sprite sprite;
     public Vector2 baseLocation;
     VisLabel baseLocationLbl;
@@ -48,9 +46,10 @@ public class EditorElement extends Group implements IConfigurable {
 
     public LineData addLine() {
         LineData line = new LineData();
-        line.localAnchor = anchorPoints.points[AnchorPoints.AnchorIndex.MID.ordinal()];
+        line.localAnchor = AnchorPoints.MID.offset();
         line.parentActor = this;
         linedata.add(line);
+        data.lineData.add(line);
         return line;
     }
     public void loadLine(LineData line) {
@@ -148,6 +147,8 @@ public class EditorElement extends Group implements IConfigurable {
 
         return cfgTable;
     }
+
+    @Override public String toString() { return data.name; }
 
     public static class Data {
         public String name;

@@ -15,6 +15,7 @@ import net.ncguy.uml.global.Sprites;
  */
 public class LineData {
 
+    public String name;
     public Vector2 localAnchor, remoteAnchor;
     public String remoteActorName;
 
@@ -24,11 +25,17 @@ public class LineData {
     public static transient Sprite sprite;
     public static transient Color colour;
 
+    public LineData() {
+        remoteAnchor = AnchorPoints.MID.offset();
+        remoteActor = null;
+        remoteActorName = "";
+    }
+
     public void draw(Batch batch, float alpha) {
         if(sprite == null) sprite = new Sprite(Sprites.pixel);
         if(colour == null) colour = Color.WHITE;
 
-        if(remoteAnchor == null) remoteAnchor = EditorElement.anchorPoints.points[AnchorPoints.AnchorIndex.MID.ordinal()];
+        if(remoteAnchor == null) remoteAnchor = AnchorPoints.MID.offset();
 
         try {
             Helpers.lineDraw(sprite, batch, colour,
@@ -53,6 +60,9 @@ public class LineData {
 
     @Override
     public String toString() {
+        if(name != null) {
+            if(name.replaceAll("/ /", "").length() >= 1) return name;
+        }
         String out = "";
         out += parentActor != null ? parentActor.data.name : "None";
         out += " | ";

@@ -26,6 +26,7 @@ import net.ncguy.uml.components.LineDialog;
 import net.ncguy.uml.components.Panel;
 import net.ncguy.uml.drawable.Assets;
 import net.ncguy.uml.drawable.Icons;
+import net.ncguy.uml.elements.ActorElement;
 import net.ncguy.uml.elements.EditorElement;
 import net.ncguy.uml.elements.ElementController;
 import net.ncguy.uml.global.WorkspaceData;
@@ -75,7 +76,8 @@ public class MainDisplay implements Screen {
     public LineDialog lineDialog;
 
     public VisImageButton openFileBtn, saveFileBtn;
-    public VisImageButton addElementBtn;
+    public VisImageButton addGenericBtn;
+    public VisImageButton addActorBtn;
 
     public FileChooser openFileChooser;
     public FileChooser saveFileChooser;
@@ -144,17 +146,24 @@ public class MainDisplay implements Screen {
             }
         });
 
-        addElementBtn = new VisImageButton(Assets.getIcon(Icons.LAYER_ADD));
-        addElementBtn.addListener(new ClickListener(){
+        addGenericBtn = new VisImageButton(Assets.getIcon(Icons.LAYER_ADD));
+        new Tooltip(addGenericBtn, "Adds a new Use case element");
+        addActorBtn = new VisImageButton(Assets.getIcon(Icons.LAYER_ADD));
+        new Tooltip(addActorBtn, "Adds a new Actor element");
+        addGenericBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 EditorElement e = new EditorElement();
                 e.addListener(new SelectionListener(e, UMLLauncher.instance.display));
-                controller.remove();
-                uiStage.addActor(e);
-                uiStage.addActor(controller);
-                elements.add(e);
-                regrowTree();
+                addElementToStage(e);
+            }
+        });
+        addActorBtn.addListener(new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                ActorElement a = new ActorElement();
+                a.addListener(new SelectionListener(a, UMLLauncher.instance.display));
+                addElementToStage(a);
             }
         });
 
@@ -181,6 +190,7 @@ public class MainDisplay implements Screen {
                 if(currentElement instanceof EditorElement) {
                     EditorElement e = (EditorElement) currentElement;
                     e.data.name = dataDialog_name.getText();
+                    lineDialog.setTitle(e.data.name);
                 }
                 return false;
             }
@@ -209,11 +219,12 @@ public class MainDisplay implements Screen {
         dataDialog.addActor(dataDialog_table);
 
         openLineDialogBtn = new VisTextButton("Line editor");
-        openLineDialogBtn.addListener(new ClickListener(){
-            @Override public void clicked(InputEvent event, float x, float y) {
+        openLineDialogBtn.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
                 if(currentElement == null) return;
                 if(!(currentElement instanceof EditorElement)) return;
-                EditorElement e = (EditorElement)currentElement;
+                EditorElement e = (EditorElement) currentElement;
                 lineDialog.setTitle(e.data.name);
                 lineDialog.setVisible(true);
             }
@@ -280,9 +291,10 @@ public class MainDisplay implements Screen {
         stage.addActor(lineDialog);
 
         addButton(delElementBtn);
-        addButton(addElementBtn);
+        addButton(addGenericBtn);
         addButton(openFileBtn);
         addButton(saveFileBtn);
+        addButton(addActorBtn);
 
         regrowTree();
 
@@ -356,7 +368,6 @@ public class MainDisplay implements Screen {
         stage.setDebugAll(false);
         stage.act(delta);
         stage.draw();
-
     }
 
     @Override
@@ -410,6 +421,15 @@ public class MainDisplay implements Screen {
         index++;
         if(index % 4 == 0)
             buttonTable.row();
+    }
+
+    private void addElementToStage(EditorElement e) {
+        controller.remove();
+        uiStage.addActor(e);
+        uiStage.addActor(controller);
+        elements.add(e);
+        regrowTree();
+        e.redraw(uiStageOffset);
     }
 
     public void changeActiveActor(Actor a) {

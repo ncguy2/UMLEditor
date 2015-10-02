@@ -1,14 +1,21 @@
 package net.ncguy.uml.components;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.kotcrab.vis.ui.widget.VisImageButton;
-import com.kotcrab.vis.ui.widget.VisWindow;
+import com.badlogic.gdx.utils.Align;
+import com.kotcrab.vis.ui.widget.*;
+import net.ncguy.uml.UMLLauncher;
 import net.ncguy.uml.drawable.Assets;
 import net.ncguy.uml.drawable.Icons;
 import net.ncguy.uml.elements.EditorElement;
 import net.ncguy.uml.elements.data.LineData;
+import net.ncguy.uml.global.AnchorPoints;
 
 import java.util.ArrayList;
 
@@ -20,13 +27,36 @@ public class LineDialog extends VisWindow {
 
     public EditorElement currentElement;
     private ArrayList<LineData> lineCollection;
+    private LineData currentLine;
+
+    private VisList<LineData> lineDataList;
+    private VisScrollPane lineScrollPane;
 
     private VisImageButton closeBtn;
 
-    private static final Vector2 size = new Vector2(400, 225);
+    private VisImageButton newLineBtn, delLineBtn;
+
+    private static final Vector2 size = new Vector2(700, 400);
+
+    // FORM
+    public VisTable formTable;
+    public VisLabel nameLbl;
+    public VisTextField nameTxt;
+    public VisLabel localAnchorLbl;
+    public VisSelectBox<AnchorPoints> localAnchorSelect;
+    public VisLabel remoteAnchorLbl;
+    public VisSelectBox<AnchorPoints> remoteAnchorSelect;
+    public VisLabel remoteActorLbl;
+    public VisSelectBox<EditorElement> remoteActorSelect;
+    public VisLabel remoteActorNameLbl;
+    public VisTextField remoteActorNameTxt;
+
+    private EditorElement blankElement;
 
     public LineDialog(String title) {
         super(title);
+        blankElement = new EditorElement();
+        blankElement.data.name = "None";
         setVisible(false);
         setModal(false);
         initUI();
@@ -34,6 +64,23 @@ public class LineDialog extends VisWindow {
 
     private void initUI() {
         closeBtn = new VisImageButton(Assets.getIcon(Icons.EXIT));
+        lineDataList = new VisList<>();
+        lineScrollPane = new VisScrollPane(lineDataList);
+
+        formTable = new VisTable(true);
+        nameLbl = new VisLabel("Line ID");
+        nameTxt = new VisTextField("");
+        localAnchorLbl = new VisLabel("Local Anchor");
+        localAnchorSelect = new VisSelectBox<>();
+        remoteAnchorLbl = new VisLabel("Remote Anchor");
+        remoteAnchorSelect = new VisSelectBox<>();
+        remoteActorLbl = new VisLabel("Remote Actor");
+        remoteActorSelect = new VisSelectBox<>();
+        remoteActorNameLbl = new VisLabel("Remote Actor Name");
+        remoteActorNameTxt = new VisTextField();
+
+        newLineBtn = new VisImageButton(Assets.getIcon(Icons.LAYER_ADD));
+        delLineBtn = new VisImageButton(Assets.getIcon(Icons.LAYER_REMOVE));
 
         closeBtn.addListener(new ClickListener() {
             @Override
@@ -41,8 +88,160 @@ public class LineDialog extends VisWindow {
                 setVisible(false);
             }
         });
+        lineDataList.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                super.clicked(event, x, y);
+                if(lineDataList.getSelected() != null) {
+                    currentLine = lineDataList.getSelected();
+                    updateSelected();
+                }
+            }
+        });
+        nameTxt.addListener(new InputListener() {
+            @Override
+            public boolean keyTyped(InputEvent event, char character) {
+                if(currentLine == null) return super.keyTyped(event, character);
+                currentLine.name = nameTxt.getText();
+                return super.keyTyped(event, character);
+            }
+        });
+        localAnchorSelect.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if(currentLine == null) return;
+                currentLine.localAnchor = localAnchorSelect.getSelected().offset();
+            }
+        });
+        remoteAnchorSelect.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if(currentLine == null) return;
+                currentLine.remoteAnchor = remoteAnchorSelect.getSelected().offset();
+            }
+        });
+        remoteActorSelect.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                EditorElement remoteActor = remoteActorSelect.getSelected();
+                remoteActorNameTxt.setText(remoteActor.data.name);
+                if(currentLine == null) return;
+                if(remoteActor.equals(blankElement))
+                    currentLine.remoteActor = null;
+                else currentLine.remoteActor = remoteActor;
+            }
+        });
+        newLineBtn.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                super.clicked(event, x, y);
+                currentLine = currentElement.addLine();
+                populateList();
+            }
+        });
+        delLineBtn.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                super.clicked(event, x, y);
+                if(currentLine == null) return;
+                lineCollection.remove(currentLine);
+                populateList();
+            }
+        });
+
+        localAnchorSelect.setItems(AnchorPoints.values());
+        remoteAnchorSelect.setItems(AnchorPoints.values());
+        
+        float fieldX = 250;
+        
+        formTable.add(nameLbl).align(Align.right);
+        formTable.add(nameTxt).width(fieldX);
+        formTable.row();
+        formTable.add(localAnchorLbl).align(Align.right);
+        formTable.add(localAnchorSelect).width(fieldX);
+        formTable.row();
+        formTable.add(remoteAnchorLbl).align(Align.right);
+        formTable.add(remoteAnchorSelect).width(fieldX);
+        formTable.row();
+        formTable.add(remoteActorLbl).align(Align.right);
+        formTable.add(remoteActorSelect).width(fieldX);
+        formTable.row();
+        formTable.add(remoteActorNameLbl).align(Align.right);
+        formTable.add(remoteActorNameTxt).width(fieldX);
+
+        remoteActorNameTxt.setDisabled(true);
+
+        new Tooltip(newLineBtn, "Adds a new line to the current element");
+        new Tooltip(delLineBtn, "Removes the selected line from the current element");
 
         getTitleTable().add(closeBtn);
+        add(lineScrollPane);
+        add(newLineBtn, delLineBtn);
+        add(formTable);
+        updateSelected();
+    }
+
+    @Override
+    public void draw(Batch batch, float parentAlpha) {
+        lineScrollPane.setBounds(2, 2, 200, (getHeight() - getPadTop()) - 4);
+        formTable.setBounds(250, 2, getWidth()-252, (getHeight()-getPadTop())-4);
+        newLineBtn.setBounds(204, (getHeight()-getPadTop())-32, 30, 30);
+        delLineBtn.setBounds(204, (getHeight()-getPadTop())-64, 30, 30);
+
+        super.draw(batch, parentAlpha);
+    }
+
+    public void changeElement(EditorElement editorElement){
+        this.currentElement = editorElement;
+        this.lineCollection = editorElement.linedata;
+        this.currentLine = null;
+        populateList();
+    }
+
+    public void populateList() {
+        this.lineDataList.clearItems();
+        LineData[] data = new LineData[this.lineCollection.size()];
+        int index = 0;
+        for(LineData d : this.lineCollection) {
+            data[index++] = d;
+        }
+        this.lineDataList.setItems(data);
+        this.lineDataList.setSelectedIndex(-1);
+        updateSelected();
+    }
+
+    public void updateSelected() {
+        try {
+            EditorElement[] es = new EditorElement[UMLLauncher.instance.display.elements.size()];
+            es[0] = blankElement;
+            int index = 1;
+            for(EditorElement e : UMLLauncher.instance.display.elements) {
+                if(e != currentElement)
+                    es[index++] = e;
+            }
+            remoteActorSelect.setItems(es);
+        }catch(Exception e) {
+
+
+        }
+        if(this.lineDataList.getSelectedIndex() >= 0) {
+            if(this.lineDataList.getSelected() != null) {
+                currentLine = this.lineDataList.getSelected();
+                nameTxt.setText(currentLine.name);
+                localAnchorSelect.setSelected(AnchorPoints.getPointFromVector(currentLine.localAnchor));
+                remoteAnchorSelect.setSelected(AnchorPoints.getPointFromVector(currentLine.remoteAnchor));
+                remoteActorSelect.setSelected(currentLine.remoteActor);
+                remoteActorNameTxt.setText(remoteActorSelect.getSelected().data.name);
+                return;
+            }
+        }
+        nameTxt.setText("");
+        localAnchorSelect.setSelected(AnchorPoints.MID);
+        remoteAnchorSelect.setSelected(AnchorPoints.MID);
+        try {
+            remoteActorSelect.setSelectedIndex(0);
+            remoteActorNameTxt.setText(remoteActorSelect.getSelected().data.name);
+        }catch(Exception e) {}
     }
 
     public void initHelperVars() {
@@ -56,7 +255,8 @@ public class LineDialog extends VisWindow {
     @Override
     public void setVisible(boolean visible) {
         super.setVisible(visible);
-
+        setBounds((Gdx.graphics.getWidth() / 2) - (size.x / 2), (Gdx.graphics.getHeight() / 2) - (size.y / 2), size.x, size.y);
+        setZIndex(100);
     }
 
 }
