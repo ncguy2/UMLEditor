@@ -42,6 +42,7 @@ public class EditorElement extends Group implements IConfigurable {
         data.type = ElementTypes.GENERIC;
         data.lineData = new ArrayList<>();
         addActor(baseLocationLbl);
+        setColor(data.colour != null ? data.colour : Color.WHITE);
     }
 
     public LineData addLine() {
@@ -109,15 +110,21 @@ public class EditorElement extends Group implements IConfigurable {
         super.draw(batch, alpha);
     }
 
+    @Override
+    public void setColor(Color colour) {
+        super.setColor(colour);
+        sprite.setColor(colour);
+        data.colour = colour;
+    }
+
     public void prepareData() {
         data.baseX = baseLocation.x;
         data.baseY = baseLocation.y;
         data.baseW = getWidth();
         data.baseH = getHeight();
-        data.colour = new Color();
+        data.colour = data.colour != null ? data.colour : Color.WHITE;
         data.lineData = new ArrayList<>();
         for(LineData line : linedata) {
-
             line.remoteActorName = line.remoteActor.data.name;
             data.lineData.add(line);
         }
@@ -130,6 +137,7 @@ public class EditorElement extends Group implements IConfigurable {
         System.out.println("EditorElement.redraw >> "+this.hashCode());
         System.out.println(String.format("\tBase location: [%s, %s]", baseLocation.x, baseLocation.y));
         System.out.println(String.format("\tOffset: [%s, %s]", offset.x, offset.y));
+        setColor(data.colour != null ? data.colour : Color.WHITE);
         setX(baseLocation.x + offset.x);
         setY(baseLocation.y + offset.y);
     }

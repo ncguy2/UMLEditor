@@ -19,6 +19,7 @@ public class EventHandler {
 
     public static void addEventToHandler(String handler, IEvent event) {
         List<IEvent> eventList;
+        handler = handler.toLowerCase();
         if(getRegisteredHandlers().get(handler) == null) {
             eventList = new ArrayList<>();
         }else{
@@ -29,6 +30,7 @@ public class EventHandler {
     }
 
     public static List<IEvent> getEventsByHandler(String handler) {
+        handler = handler.toLowerCase();
         if(getRegisteredHandlers().containsKey(handler)) {
             return getRegisteredHandlers().get(handler);
         }
@@ -36,9 +38,12 @@ public class EventHandler {
     }
 
     public static void executeEventsByHandler(String handler, Object... args) {
+        handler = handler.toLowerCase();
+        System.out.println("Event fired >> "+handler);
         if(getRegisteredHandlers().get(handler) == null) return;
         List<IEvent> eventList = getRegisteredHandlers().get(handler);
         for(IEvent event : eventList) {
+            System.out.println("\t"+event.getClass().getCanonicalName());
             event.run(args);
         }
     }

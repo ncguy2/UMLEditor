@@ -2,6 +2,7 @@ package net.ncguy.uml.io;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import net.ncguy.uml.UMLLauncher;
 import net.ncguy.uml.elements.EditorElement;
 import net.ncguy.uml.global.WorkspaceData;
 
@@ -20,7 +21,9 @@ public class JSONHandler {
     Gson gson;
 
     public JSONHandler() {
-        gson = new GsonBuilder().setPrettyPrinting().create();
+        if(UMLLauncher.prettyJson)
+            gson = new GsonBuilder().setPrettyPrinting().create();
+        else gson = new Gson();
     }
 
     public String load(String filePath) {

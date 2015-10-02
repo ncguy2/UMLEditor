@@ -1,6 +1,7 @@
 package net.ncguy.uml.components;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -15,6 +16,7 @@ import net.ncguy.uml.drawable.Assets;
 import net.ncguy.uml.drawable.Icons;
 import net.ncguy.uml.elements.EditorElement;
 import net.ncguy.uml.elements.data.LineData;
+import net.ncguy.uml.event.EventHandler;
 import net.ncguy.uml.global.AnchorPoints;
 
 import java.util.ArrayList;
@@ -51,6 +53,8 @@ public class LineDialog extends VisWindow {
     public VisLabel remoteActorNameLbl;
     public VisTextField remoteActorNameTxt;
 
+    public VisTextButton changeColourBtn;
+
     private EditorElement blankElement;
 
     public LineDialog(String title) {
@@ -66,7 +70,6 @@ public class LineDialog extends VisWindow {
         closeBtn = new VisImageButton(Assets.getIcon(Icons.EXIT));
         lineDataList = new VisList<>();
         lineScrollPane = new VisScrollPane(lineDataList);
-
         formTable = new VisTable(true);
         nameLbl = new VisLabel("Line ID");
         nameTxt = new VisTextField("");
@@ -78,10 +81,18 @@ public class LineDialog extends VisWindow {
         remoteActorSelect = new VisSelectBox<>();
         remoteActorNameLbl = new VisLabel("Remote Actor Name");
         remoteActorNameTxt = new VisTextField();
+        changeColourBtn = new VisTextButton("Change Colour");
 
         newLineBtn = new VisImageButton(Assets.getIcon(Icons.LAYER_ADD));
         delLineBtn = new VisImageButton(Assets.getIcon(Icons.LAYER_REMOVE));
 
+        changeColourBtn.addListener(new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                super.clicked(event, x, y);
+                getStage().addActor(UMLLauncher.colourWindow.fadeIn("updateColour.lineDialog"));
+            }
+        });
         closeBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -178,6 +189,15 @@ public class LineDialog extends VisWindow {
         add(lineScrollPane);
         add(newLineBtn, delLineBtn);
         add(formTable);
+        add(changeColourBtn);
+
+        EventHandler.addEventToHandler("updateColour.lineDialog", (args) -> {
+            if(currentElement == null) return;
+            if(currentLine == null) return;
+            if(args[0] instanceof Color) {
+                currentLine.colour = (Color)args[0];
+            }
+        });
         updateSelected();
     }
 
@@ -187,7 +207,7 @@ public class LineDialog extends VisWindow {
         formTable.setBounds(250, 2, getWidth()-252, (getHeight()-getPadTop())-4);
         newLineBtn.setBounds(204, (getHeight()-getPadTop())-32, 30, 30);
         delLineBtn.setBounds(204, (getHeight()-getPadTop())-64, 30, 30);
-
+        changeColourBtn.setBounds(204, 2, 150, 30);
         super.draw(batch, parentAlpha);
     }
 

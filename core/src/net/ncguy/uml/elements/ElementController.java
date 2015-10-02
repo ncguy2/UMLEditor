@@ -61,11 +61,6 @@ public class ElementController extends Actor {
 
         setBounds(element.getX(), element.getY(), element.getWidth(), element.getHeight());
 
-//        if(element instanceof EditorElement) {
-//            Vector2 o = UMLLauncher.instance.display.uiStageOffset;
-//            ((EditorElement) element).setBasePosition(element.getX()-o.x, element.getY()-o.y);
-//        }
-
         for(PointIndex key : PointIndex.values()) {
             CornerActor actor;
             if(cornerActors[key.ordinal()] == null) {

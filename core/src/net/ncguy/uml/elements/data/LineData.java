@@ -23,7 +23,7 @@ public class LineData {
     public transient EditorElement remoteActor;
 
     public static transient Sprite sprite;
-    public static transient Color colour;
+    public Color colour;
 
     public LineData() {
         remoteAnchor = AnchorPoints.MID.offset();

@@ -17,7 +17,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.DragListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import com.kotcrab.vis.ui.VisUI;
 import com.kotcrab.vis.ui.widget.*;
 import com.kotcrab.vis.ui.widget.file.FileChooser;
 import com.kotcrab.vis.ui.widget.file.FileChooserAdapter;
@@ -29,6 +28,7 @@ import net.ncguy.uml.drawable.Icons;
 import net.ncguy.uml.elements.ActorElement;
 import net.ncguy.uml.elements.EditorElement;
 import net.ncguy.uml.elements.ElementController;
+import net.ncguy.uml.event.EventHandler;
 import net.ncguy.uml.global.WorkspaceData;
 import net.ncguy.uml.io.JSONHandler;
 
@@ -44,6 +44,7 @@ public class MainDisplay implements Screen {
     JSONHandler jsonHandler;
 
     Stage stage, uiStage;
+    public InputMultiplexer multiplexer;
 
     VisTable buttonTable;
     VisScrollPane buttonScroll;
@@ -70,7 +71,7 @@ public class MainDisplay implements Screen {
     public VisTextField dataDialog_name;
     public VisImageButton dataDialog_exit;
     public VisTextArea dataDialog_contents;
-
+    public VisTextButton colEditBtn;
     public VisTextButton openLineDialogBtn;
 
     public LineDialog lineDialog;
@@ -84,8 +85,6 @@ public class MainDisplay implements Screen {
 
     @Override
     public void show() {
-        VisUI.load();
-        Assets.load();
         jsonHandler = new JSONHandler();
 
         lineDialog = new LineDialog("Line editor");
@@ -219,6 +218,7 @@ public class MainDisplay implements Screen {
         dataDialog.addActor(dataDialog_table);
 
         openLineDialogBtn = new VisTextButton("Line editor");
+        colEditBtn = new VisTextButton("Edit Colour");
         openLineDialogBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -229,7 +229,23 @@ public class MainDisplay implements Screen {
                 lineDialog.setVisible(true);
             }
         });
+        colEditBtn.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                super.clicked(event, x, y);
+                stage.addActor(UMLLauncher.colourWindow.fadeIn("updateColour.Maindisplay"));
+            }
+        });
         dataDialog_optionTable.add(openLineDialogBtn);
+        dataDialog_optionTable.row();
+        dataDialog_optionTable.add(colEditBtn);
+
+        EventHandler.addEventToHandler("updateColour.Maindisplay", (args) -> {
+            if(currentElement == null) return;
+            if(args[0] instanceof Color) {
+                currentElement.setColor((Color) args[0]);
+            }
+        });
 
         uiStageOffset = new Vector2();
         elements = new ArrayList<>();
@@ -337,7 +353,7 @@ public class MainDisplay implements Screen {
 //        uiStage.setBounds(leftPaneWidth, 0, Gdx.graphics.getWidth()-leftPaneWidth, Gdx.graphics.getHeight());
 //        stage.addActor(uiPane);
 
-        InputMultiplexer multiplexer = new InputMultiplexer();
+        multiplexer = new InputMultiplexer();
         multiplexer.addProcessor(stage);
         multiplexer.addProcessor(uiStage);
 
