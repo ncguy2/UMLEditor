@@ -22,6 +22,7 @@ import com.kotcrab.vis.ui.widget.*;
 import com.kotcrab.vis.ui.widget.file.FileChooser;
 import com.kotcrab.vis.ui.widget.file.FileChooserAdapter;
 import net.ncguy.uml.UMLLauncher;
+import net.ncguy.uml.components.LineDialog;
 import net.ncguy.uml.components.Panel;
 import net.ncguy.uml.drawable.Assets;
 import net.ncguy.uml.drawable.Icons;
@@ -62,12 +63,16 @@ public class MainDisplay implements Screen {
     VisList<EditorElement.Data> elementsTree;
     VisLabel camLocLbl, selObjLocLbl;
 
-    public VisDialog dataDialog;
-    public VisTable dataDialog_table, dataDialog_configTable;
-    public VisScrollPane dataDialog_configPane;
+    public VisWindow dataDialog;
+    public VisTable dataDialog_table, dataDialog_optionTable;
+    public VisScrollPane dataDialog_optionPane;
     public VisTextField dataDialog_name;
     public VisImageButton dataDialog_exit;
     public VisTextArea dataDialog_contents;
+
+    public VisTextButton openLineDialogBtn;
+
+    public LineDialog lineDialog;
 
     public VisImageButton openFileBtn, saveFileBtn;
     public VisImageButton addElementBtn;
@@ -80,6 +85,8 @@ public class MainDisplay implements Screen {
         VisUI.load();
         Assets.load();
         jsonHandler = new JSONHandler();
+
+        lineDialog = new LineDialog("Line editor");
 
         openFileChooser = new FileChooser("Load file", FileChooser.Mode.OPEN);
         openFileChooser.setListener(new FileChooserAdapter() {
@@ -154,14 +161,16 @@ public class MainDisplay implements Screen {
         stage = new Stage(new ScreenViewport(new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight())));
         uiStage = new Stage(new ScreenViewport(new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight())));
         dataDialog = new VisDialog("Data");
-        dataDialog_configTable = new VisTable(true);
-        dataDialog_configPane = new VisScrollPane(dataDialog_configTable);
+        dataDialog.setModal(false);
         dataDialog_table = new VisTable(true);
         dataDialog_name = new VisTextField("");
+        dataDialog_optionTable = new VisTable(true);
+        dataDialog_optionPane = new VisScrollPane(dataDialog_optionTable);
         dataDialog_exit = new VisImageButton(Assets.getIcon(Icons.EXIT));
         dataDialog_contents = new VisTextArea();
-        dataDialog_exit.addListener(new ClickListener(){
-            @Override public void clicked(InputEvent event, float x, float y) {
+        dataDialog_exit.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
                 dataDialog.setVisible(false);
             }
         });
@@ -194,11 +203,23 @@ public class MainDisplay implements Screen {
         dataDialog_table.addSeparator().colspan(5);
         dataDialog_table.row();
         dataDialog_table.add(dataDialog_contents).colspan(4).fillX().height(400);
-        dataDialog_table.add(dataDialog_configPane);
-//        dataDialog_table.add(dataDialog_contents).colspan(2).expandX().width(600).height(400);
+        dataDialog_table.add(dataDialog_optionPane);
         dataDialog_table.setFillParent(true);
 //        dataDialog_table.setBounds(0, 0, dataDialog.getH);
         dataDialog.addActor(dataDialog_table);
+
+        openLineDialogBtn = new VisTextButton("Line editor");
+        openLineDialogBtn.addListener(new ClickListener(){
+            @Override public void clicked(InputEvent event, float x, float y) {
+                if(currentElement == null) return;
+                if(!(currentElement instanceof EditorElement)) return;
+                EditorElement e = (EditorElement)currentElement;
+                lineDialog.setTitle(e.data.name);
+                lineDialog.setVisible(true);
+            }
+        });
+        dataDialog_optionTable.add(openLineDialogBtn);
+
         uiStageOffset = new Vector2();
         elements = new ArrayList<>();
         vertLeft = new Separator(true);
@@ -237,7 +258,7 @@ public class MainDisplay implements Screen {
                     dataDialog.getTitleLabel().setText(e.data.name);
                     dataDialog_name.setText(e.data.name);
                     dataDialog_contents.setText(e.data.contents);
-                    dataDialog.setBounds(100, 100, Gdx.graphics.getWidth()-200, Gdx.graphics.getHeight()-200);
+                    dataDialog.setBounds((Gdx.graphics.getWidth()/2)-500, (Gdx.graphics.getHeight()/2)-275, 1000, 550);
                     dataDialog.setVisible(true);
                 }
             }
@@ -256,6 +277,7 @@ public class MainDisplay implements Screen {
         stage.addActor(camLocLbl);
         stage.addActor(selObjLocLbl);
         stage.addActor(dataDialog);
+        stage.addActor(lineDialog);
 
         addButton(delElementBtn);
         addButton(addElementBtn);

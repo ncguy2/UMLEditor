@@ -8,9 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.DragListener;
-import com.kotcrab.vis.ui.widget.VisTable;
 import net.ncguy.uml.UMLLauncher;
-import net.ncguy.uml.api.IConfigurable;
 import net.ncguy.uml.components.CornerActor;
 import net.ncguy.uml.components.LineActor;
 import net.ncguy.uml.display.MainDisplay;
@@ -82,13 +80,7 @@ public class ElementController extends Actor {
     }
 
     public void updateConfigTable() {
-        parent.dataDialog_configTable.clearChildren();
-        if(controlledElement == null) return;
-        if(controlledElement instanceof IConfigurable) {
-            parent.dataDialog_configTable.add(((IConfigurable)controlledElement).getConfigTable());
-        }else{
-            parent.dataDialog_configTable.add(new VisTable(true));
-        }
+
     }
 
     public ElementController addedToStage(Stage stage) {
@@ -239,7 +231,7 @@ public class ElementController extends Actor {
                 ctrl.parent.dataDialog.getTitleLabel().setText(e.data.name);
                 ctrl.parent.dataDialog_name.setText(e.data.name);
                 ctrl.parent.dataDialog_contents.setText(e.data.contents);
-                ctrl.parent.dataDialog.setBounds(100, 100, Gdx.graphics.getWidth()-200, Gdx.graphics.getHeight()-200);
+                ctrl.parent.dataDialog.setBounds((Gdx.graphics.getWidth()/2)-500, (Gdx.graphics.getHeight()/2)-275, 1000, 550);
                 ctrl.parent.dataDialog.setVisible(true);
             }
         }
