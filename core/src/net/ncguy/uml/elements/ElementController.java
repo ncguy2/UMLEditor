@@ -76,7 +76,7 @@ public class ElementController extends Actor {
         setupLines();
         setupCorners();
         updateConfigTable();
-        assertBody();
+        assertBody(false);
     }
 
     public void updateConfigTable() {
@@ -136,22 +136,25 @@ public class ElementController extends Actor {
     public void assertBody(boolean updateElement) {
         Actor e = controlledElement;
         if(e == null) return;
+        float z = UMLLauncher.instance.display.zoom;
 
-        cornerActors[BOTLEFT.ordinal()].setPosition(e.getX()-halfCornerSize,               e.getY()-halfCornerSize);
-        cornerActors[BOTRIGHT.ordinal()].setPosition(e.getX() + e.getWidth() - halfCornerSize, e.getY() - halfCornerSize);
-        cornerActors[TOPLEFT.ordinal()].setPosition(e.getX() - halfCornerSize, e.getY() + e.getHeight() - halfCornerSize);
-        cornerActors[TOPRIGHT.ordinal()].setPosition(e.getX() + e.getWidth() - halfCornerSize, e.getY() + e.getHeight() - halfCornerSize);
+        float x, y, w, h;
+        x = e.getX();
+        y = e.getY();
+        w = e.getWidth();
+        h = e.getHeight();
+        
+        cornerActors[BOTLEFT.ordinal()].setPosition(x-halfCornerSize,               y-halfCornerSize);
+        cornerActors[BOTRIGHT.ordinal()].setPosition(x + w - halfCornerSize, y - halfCornerSize);
+        cornerActors[TOPLEFT.ordinal()].setPosition(x - halfCornerSize, y + h - halfCornerSize);
+        cornerActors[TOPRIGHT.ordinal()].setPosition(x + w - halfCornerSize, y + h - halfCornerSize);
 
-        setBounds(e.getX(), e.getY(), e.getWidth(), e.getHeight());
-
-//        setBounds(element.getX(), element.getY(), element.getWidth(), element.getHeight());
+        setBounds(x, y, w, h);
 
         if(updateElement) {
             if(controlledElement instanceof EditorElement) {
                 Vector2 o = UMLLauncher.instance.display.uiStageOffset;
-                System.out.println("PreChangeBounds: " + ((EditorElement) controlledElement).baseLocation);
-                ((EditorElement) controlledElement).setBasePosition(getX() - o.x, getY() - o.y);
-                System.out.println("PostChangeBounds: " + ((EditorElement) controlledElement).baseLocation);
+                ((EditorElement) controlledElement).setBasePosition(getX() - (o.x / z), getY() - (o.y / z));
 //                ((EditorElement) controlledElement).redraw(o);
             }else{
                 System.out.println("ControlledElement is not an instance of EditorElement");
@@ -169,6 +172,7 @@ public class ElementController extends Actor {
             }
         }
         if(originKey == null) return;
+        float z = UMLLauncher.instance.display.zoom;
         switch(originKey) {
             case BOTLEFT:
                 cornerActors[BOTRIGHT.ordinal()].setY(origin.getY());
@@ -191,20 +195,30 @@ public class ElementController extends Actor {
         float w = cornerActors[BOTRIGHT.ordinal()].getX() - cornerActors[BOTLEFT.ordinal()].getX();
         float h = cornerActors[TOPLEFT.ordinal()].getY() - cornerActors[BOTLEFT.ordinal()].getY();
 
-        setX(cornerActors[BOTLEFT.ordinal()].getX() + halfCornerSize);
-        setY(cornerActors[BOTLEFT.ordinal()].getY() + halfCornerSize);
+        setX((cornerActors[BOTLEFT.ordinal()].getX() + halfCornerSize));
+        setY((cornerActors[BOTLEFT.ordinal()].getY() + halfCornerSize));
         setWidth(w);
         setHeight(h);
 
-        controlledElement.setSize(w, h);
 
         if(controlledElement instanceof EditorElement){
+            EditorElement e = (EditorElement)controlledElement;
+//            controlledElement.setSize(w/z, h/z);
             Vector2 o = UMLLauncher.instance.display.uiStageOffset;
-            ((EditorElement)controlledElement).setBasePosition(getX()-o.x, getY()-o.y);
+            e.setBaseX(getX() - (o.x * z));
+            e.setBaseY(getY() - (o.y * z));
+            e.setBaseW(getWidth() / z);
+            e.setBaseH(getHeight() / z);
+            e.redraw(o);
         }else{
-            controlledElement.setPosition(getX(), getY());
+            controlledElement.setX(getX());
+            controlledElement.setY(getY());
+            controlledElement.setWidth(getWidth());
+            controlledElement.setHeight(getHeight());
         }
+//        assertBody(false);
     }
+
 
     public PointIndex getKeyOfCorner(CornerActor corner) {
         PointIndex originKey = null;
@@ -258,8 +272,15 @@ public class ElementController extends Actor {
         public void touchDragged(InputEvent event1, float x1, float y1, int pointer) {
             float x = Gdx.input.getX();
             float y = Gdx.graphics.getHeight() - Gdx.input.getY();
-            float modX = (x - a.getOriginX())-parent.uiStageOffset.x;
-            float modY = (y - a.getOriginY())-parent.uiStageOffset.y;
+            System.out.println("ObjectDragListener.touchDragged >> ");
+            System.out.println(String.format("\tOriginal: %s", parent.uiStageOffset.x));
+            System.out.println(String.format("\tModified [%s]: %s", parent.zoom, parent.uiStageOffset.x/UMLLauncher.instance.display.zoom));
+            float modX = ((x - a.getOriginX()))-(parent.uiStageOffset.x*UMLLauncher.instance.display.zoom);
+            float modY = ((y - a.getOriginY()))-(parent.uiStageOffset.y*UMLLauncher.instance.display.zoom);
+
+//            for(EditorElement e : parent.elements)
+//                e.redraw(parent.uiStageOffset, parent.zoom);
+
             if(a instanceof EditorElement){
                 EditorElement e = (EditorElement)a;
                 e.setBaseX(modX);
@@ -268,7 +289,7 @@ public class ElementController extends Actor {
                 a.setX(modX);
                 a.setY(modY);
             }
-            controller.assertBody();
+            controller.assertBody(false);
         }
         @Override
         public void touchUp(InputEvent event, float x, float y, int pointer, int button) {

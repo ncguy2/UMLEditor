@@ -26,6 +26,7 @@ public class EditorElement extends Group implements IConfigurable {
 
     Sprite sprite;
     public Vector2 baseLocation;
+    public Vector2 baseSize;
     VisLabel baseLocationLbl;
     public Data data;
     public ArrayList<LineData> linedata;
@@ -34,6 +35,7 @@ public class EditorElement extends Group implements IConfigurable {
         sprite = new Sprite(new Texture("assets/components/generic.png"));
         setSize(sprite.getWidth(), sprite.getHeight());
         baseLocation = new Vector2();
+        baseSize = new Vector2(sprite.getWidth(), sprite.getHeight());
         baseLocationLbl = new VisLabel();
         linedata = new ArrayList<>();
         data = new Data();
@@ -83,6 +85,7 @@ public class EditorElement extends Group implements IConfigurable {
 
     public void setBaseBounds(float x, float y, float w, float h) {
         baseLocation.set(x, y);
+        baseSize.set(w, h);
         redraw(UMLLauncher.instance.display.uiStageOffset);
     }
 
@@ -93,6 +96,15 @@ public class EditorElement extends Group implements IConfigurable {
 
     public void setBaseY(float y) {
         baseLocation.y = y;
+        redraw(UMLLauncher.instance.display.uiStageOffset);
+    }
+
+    public void setBaseW(float w) {
+        baseSize.x = w;
+        redraw(UMLLauncher.instance.display.uiStageOffset);
+    }
+    public void setBaseH(float h) {
+        baseSize.y = h;
         redraw(UMLLauncher.instance.display.uiStageOffset);
     }
 
@@ -107,7 +119,7 @@ public class EditorElement extends Group implements IConfigurable {
         sprite.setBounds(getX(), getY(), getWidth(), getHeight());
         sprite.draw(batch, alpha);
         baseLocationLbl.setText(String.format("X: %s\nY: %s", baseLocation.x, baseLocation.y));
-        super.draw(batch, alpha);
+//        super.draw(batch, alpha);
     }
 
     @Override
@@ -120,8 +132,8 @@ public class EditorElement extends Group implements IConfigurable {
     public void prepareData() {
         data.baseX = baseLocation.x;
         data.baseY = baseLocation.y;
-        data.baseW = getWidth();
-        data.baseH = getHeight();
+        data.baseW = baseSize.x;
+        data.baseH = baseSize.y;
         data.colour = data.colour != null ? data.colour : Color.WHITE;
         data.lineData = new ArrayList<>();
         for(LineData line : linedata) {
@@ -133,13 +145,13 @@ public class EditorElement extends Group implements IConfigurable {
     public float getBaseX() { return baseLocation.x; }
     public float getBaseY() { return baseLocation.y; }
 
-    public void redraw(Vector2 offset) {
-        System.out.println("EditorElement.redraw >> "+this.hashCode());
-        System.out.println(String.format("\tBase location: [%s, %s]", baseLocation.x, baseLocation.y));
-        System.out.println(String.format("\tOffset: [%s, %s]", offset.x, offset.y));
+    public void redraw(Vector2 offset) { redraw(offset, UMLLauncher.instance.display.zoom);}
+    public void redraw(Vector2 offset, float zoom) {
         setColor(data.colour != null ? data.colour : Color.WHITE);
-        setX(baseLocation.x + offset.x);
-        setY(baseLocation.y + offset.y);
+        setX(baseLocation.x + (offset.x * zoom));
+        setY(baseLocation.y + (offset.y * zoom));
+        setWidth(baseSize.x * zoom);
+        setHeight(baseSize.y * zoom);
     }
 
     @Override
@@ -175,7 +187,7 @@ public class EditorElement extends Group implements IConfigurable {
         GENERIC(EditorElement.class),
         ACTOR(ActorElement.class),
         ;
-        private ElementTypes(Class clazz) {
+        ElementTypes(Class clazz) {
             try{
                 ctor = clazz.getConstructor();
             }catch(Exception e) {

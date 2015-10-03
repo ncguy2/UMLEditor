@@ -51,8 +51,8 @@ public class JSONHandler {
                     e.data = data;
                     e.baseLocation.x = data.baseX;
                     e.baseLocation.y = data.baseY;
-                    e.setWidth(data.baseW);
-                    e.setHeight(data.baseH);
+                    e.baseSize.x = data.baseW;
+                    e.baseSize.y = data.baseH;
                     workspaceData.elements.add(e);
                 }
             }catch(Exception exc) {

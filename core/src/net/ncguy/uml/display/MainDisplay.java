@@ -54,6 +54,7 @@ public class MainDisplay implements Screen {
     public ElementController controller;
 
     public Vector2 uiStageOffset;
+    public float zoom = 1;
 
     public Separator vertLeft, horzRight;
     public VisImageButton delElementBtn;
@@ -328,9 +329,9 @@ public class MainDisplay implements Screen {
             @Override
             public void touchDragged(InputEvent event, float x, float y, int pointer) {
                 if(!valid) return;
-                scalar = 1f;
-                float modX = uiStageOffset.x+( (Gdx.input.getDeltaX())*scalar);
-                float modY = uiStageOffset.y+(-(Gdx.input.getDeltaY())*scalar);
+                scalar = zoom;
+                float modX = uiStageOffset.x+( (Gdx.input.getDeltaX())/scalar);
+                float modY = uiStageOffset.y+(-(Gdx.input.getDeltaY())/scalar);
                 System.out.println("MainDisplay.touchDragged >>");
                 System.out.println("\tModX: "+modX);
                 System.out.println("\tModY: " + modY);
@@ -352,6 +353,19 @@ public class MainDisplay implements Screen {
         uiStage.addActor(controller.addedToStage(uiStage));
 //        uiStage.setBounds(leftPaneWidth, 0, Gdx.graphics.getWidth()-leftPaneWidth, Gdx.graphics.getHeight());
 //        stage.addActor(uiPane);
+
+        stage.addListener(new InputListener() {
+            @Override
+            public boolean scrolled(InputEvent event, float x, float y, int amount) {
+                zoom -= Float.parseFloat(amount+"f")/100;
+                if(zoom < .01f) zoom = .01f;
+                if(zoom > 100) zoom = 100;
+                for(EditorElement e : elements)
+                    e.redraw(uiStageOffset, zoom);
+                controller.assertBody(false);
+                return super.scrolled(event, x, y, amount);
+            }
+        });
 
         multiplexer = new InputMultiplexer();
         multiplexer.addProcessor(stage);

@@ -23,6 +23,11 @@ public enum AnchorPoints {
         return new Vector2(x, y);
     }
 
+    @Override
+    public String toString() {
+        return name().toUpperCase().toCharArray()[0] + name().toLowerCase().substring(1);
+    }
+
     public static AnchorPoints getPointFromValues(float x, float y) {
         for(AnchorPoints point : values()) {
             if(x >= (point.x-.25f) && x < (point.x+.25f)) {

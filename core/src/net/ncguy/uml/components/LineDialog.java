@@ -52,6 +52,8 @@ public class LineDialog extends VisWindow {
     public VisSelectBox<EditorElement> remoteActorSelect;
     public VisLabel remoteActorNameLbl;
     public VisTextField remoteActorNameTxt;
+    public VisLabel lineTypeLbl;
+    public VisSelectBox<LineData.LineType> lineTypeSelect;
 
     public VisTextButton changeColourBtn;
 
@@ -81,6 +83,8 @@ public class LineDialog extends VisWindow {
         remoteActorSelect = new VisSelectBox<>();
         remoteActorNameLbl = new VisLabel("Remote Actor Name");
         remoteActorNameTxt = new VisTextField();
+        lineTypeLbl = new VisLabel("Line Type");
+        lineTypeSelect = new VisSelectBox<>();
         changeColourBtn = new VisTextButton("Change Colour");
 
         newLineBtn = new VisImageButton(Assets.getIcon(Icons.LAYER_ADD));
@@ -142,6 +146,13 @@ public class LineDialog extends VisWindow {
                 else currentLine.remoteActor = remoteActor;
             }
         });
+        lineTypeSelect.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if(currentLine == null) return;
+                currentLine.lineType = lineTypeSelect.getSelected();
+            }
+        });
         newLineBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -162,6 +173,7 @@ public class LineDialog extends VisWindow {
 
         localAnchorSelect.setItems(AnchorPoints.values());
         remoteAnchorSelect.setItems(AnchorPoints.values());
+        lineTypeSelect.setItems(LineData.LineType.values());
         
         float fieldX = 250;
         
@@ -179,6 +191,9 @@ public class LineDialog extends VisWindow {
         formTable.row();
         formTable.add(remoteActorNameLbl).align(Align.right);
         formTable.add(remoteActorNameTxt).width(fieldX);
+        formTable.row();
+        formTable.add(lineTypeLbl).align(Align.right);
+        formTable.add(lineTypeSelect).width(fieldX);
 
         remoteActorNameTxt.setDisabled(true);
 
@@ -252,6 +267,7 @@ public class LineDialog extends VisWindow {
                 remoteAnchorSelect.setSelected(AnchorPoints.getPointFromVector(currentLine.remoteAnchor));
                 remoteActorSelect.setSelected(currentLine.remoteActor);
                 remoteActorNameTxt.setText(remoteActorSelect.getSelected().data.name);
+                lineTypeSelect.setSelected(currentLine.lineType);
                 return;
             }
         }
@@ -262,6 +278,7 @@ public class LineDialog extends VisWindow {
             remoteActorSelect.setSelectedIndex(0);
             remoteActorNameTxt.setText(remoteActorSelect.getSelected().data.name);
         }catch(Exception e) {}
+        lineTypeSelect.setSelected(LineData.LineType.ASSOCIATE);
     }
 
     public void initHelperVars() {

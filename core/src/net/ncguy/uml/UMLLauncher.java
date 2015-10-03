@@ -18,8 +18,12 @@ public class UMLLauncher extends Game {
 		System.out.println("===============================================");
 		System.out.println("Scanning launch arguments...");
 		String argStr = "[";
-		for(String s : args) {
-			argStr += s+", ";
+		if(args.length < 1) {
+			argStr += "..";
+		}else{
+			for(String s : args) {
+				argStr += s + ", ";
+			}
 		}
 		argStr = argStr.substring(0, argStr.length()-2)+"]";
 		System.out.println("Arguments: "+argStr);

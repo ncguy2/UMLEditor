@@ -3,6 +3,7 @@ package net.ncguy.uml.elements.data;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import net.ncguy.uml.elements.EditorElement;
 import net.ncguy.uml.global.AnchorPoints;
@@ -18,6 +19,7 @@ public class LineData {
     public String name;
     public Vector2 localAnchor, remoteAnchor;
     public String remoteActorName;
+    public LineType lineType;
 
     public transient EditorElement parentActor;
     public transient EditorElement remoteActor;
@@ -25,10 +27,14 @@ public class LineData {
     public static transient Sprite sprite;
     public Color colour;
 
+    private static ShapeRenderer shapeRenderer;
+
     public LineData() {
         remoteAnchor = AnchorPoints.MID.offset();
         remoteActor = null;
         remoteActorName = "";
+        lineType = LineType.ASSOCIATE;
+        shapeRenderer = new ShapeRenderer();
     }
 
     public void draw(Batch batch, float alpha) {
@@ -38,9 +44,12 @@ public class LineData {
         if(remoteAnchor == null) remoteAnchor = AnchorPoints.MID.offset();
 
         try {
-            Helpers.lineDraw(sprite, batch, colour,
-                    getLocalAnchorX(), getLocalAnchorY(),
-                    getRemoteAnchorX(), getRemoteAnchorY(), 2);
+            switch(lineType) {
+                default:
+                    Helpers.lineDraw(sprite, batch, colour,
+                            getLocalAnchorX(), getLocalAnchorY(),
+                            getRemoteAnchorX(), getRemoteAnchorY(), 2);
+            }
         }catch(Exception e) {}
     }
 
@@ -68,6 +77,31 @@ public class LineData {
         out += " | ";
         out += remoteActor != null ? remoteActor.data.name : "None";
         return out;
+    }
+
+    private void drawDottedLine(Color col, int dotDist, float x1, float y1, float x2, float y2) {
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Point);
+        shapeRenderer.setColor(col);
+        Vector2 vec2 = new Vector2(x2, y2).sub(new Vector2(x1, y1));
+        float length = vec2.len();
+        for(int i = 0; i < length; i += dotDist) {
+            vec2.clamp(length - i, length - i);
+            shapeRenderer.point(x1 + vec2.x, y1 + vec2.y, 0);
+        }
+        shapeRenderer.setColor(Color.WHITE);
+        shapeRenderer.end();
+    }
+
+    public enum LineType {
+        ASSOCIATE,
+        INCLUDE,
+        EXTEND,
+        ;
+
+        @Override
+        public String toString() {
+            return name().toUpperCase().toCharArray()[0] + name().toLowerCase().substring(1);
+        }
     }
 
 }
