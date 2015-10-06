@@ -3,14 +3,16 @@ package net.ncguy.uml;
 import com.badlogic.gdx.Game;
 import com.kotcrab.vis.ui.VisUI;
 import net.ncguy.uml.components.sub.ColourWindow;
-import net.ncguy.uml.display.MainDisplay;
+import net.ncguy.uml.display.ClassDiagramDisplay;
+import net.ncguy.uml.display.UseCaseDisplay;
 import net.ncguy.uml.drawable.Assets;
 import net.ncguy.uml.global.Sprites;
 
 public class UMLLauncher extends Game {
 
 	public static UMLLauncher instance;
-	public MainDisplay display;
+	public UseCaseDisplay useCaseDisplay;
+	public ClassDiagramDisplay classDiagramDisplay;
 	public static ColourWindow colourWindow;
 	public static boolean prettyJson = false;
 
@@ -43,7 +45,8 @@ public class UMLLauncher extends Game {
 		Assets.load();
 		colourWindow = new ColourWindow("Colour Editor");
 		Sprites.initSprites();
-		display = new MainDisplay();
-		setScreen(display);
+		useCaseDisplay = new UseCaseDisplay();
+		classDiagramDisplay = new ClassDiagramDisplay();
+		setScreen(useCaseDisplay);
 	}
 }

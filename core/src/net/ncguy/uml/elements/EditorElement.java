@@ -57,7 +57,7 @@ public class EditorElement extends Group implements IConfigurable {
     }
     public void loadLine(LineData line) {
         line.parentActor = this;
-        for(EditorElement e : UMLLauncher.instance.display.elements) {
+        for(EditorElement e : UMLLauncher.instance.useCaseDisplay.elements) {
             if(e.data.name.equalsIgnoreCase(line.remoteActorName)) {
                 line.remoteActor = e;
                 break;
@@ -75,37 +75,37 @@ public class EditorElement extends Group implements IConfigurable {
 
     public void setBasePosition(float x, float y) {
         baseLocation.set(x, y);
-        redraw(UMLLauncher.instance.display.uiStageOffset);
+        redraw(UMLLauncher.instance.useCaseDisplay.uiStageOffset);
     }
 
     public void setBasePosition(float x, float y, int alignment) {
         baseLocation.set(x, y);
-        redraw(UMLLauncher.instance.display.uiStageOffset);
+        redraw(UMLLauncher.instance.useCaseDisplay.uiStageOffset);
     }
 
     public void setBaseBounds(float x, float y, float w, float h) {
         baseLocation.set(x, y);
         baseSize.set(w, h);
-        redraw(UMLLauncher.instance.display.uiStageOffset);
+        redraw(UMLLauncher.instance.useCaseDisplay.uiStageOffset);
     }
 
     public void setBaseX(float x) {
         baseLocation.x = x;
-        redraw(UMLLauncher.instance.display.uiStageOffset);
+        redraw(UMLLauncher.instance.useCaseDisplay.uiStageOffset);
     }
 
     public void setBaseY(float y) {
         baseLocation.y = y;
-        redraw(UMLLauncher.instance.display.uiStageOffset);
+        redraw(UMLLauncher.instance.useCaseDisplay.uiStageOffset);
     }
 
     public void setBaseW(float w) {
         baseSize.x = w;
-        redraw(UMLLauncher.instance.display.uiStageOffset);
+        redraw(UMLLauncher.instance.useCaseDisplay.uiStageOffset);
     }
     public void setBaseH(float h) {
         baseSize.y = h;
-        redraw(UMLLauncher.instance.display.uiStageOffset);
+        redraw(UMLLauncher.instance.useCaseDisplay.uiStageOffset);
     }
 
     @Override
@@ -145,7 +145,7 @@ public class EditorElement extends Group implements IConfigurable {
     public float getBaseX() { return baseLocation.x; }
     public float getBaseY() { return baseLocation.y; }
 
-    public void redraw(Vector2 offset) { redraw(offset, UMLLauncher.instance.display.zoom);}
+    public void redraw(Vector2 offset) { redraw(offset, UMLLauncher.instance.useCaseDisplay.zoom);}
     public void redraw(Vector2 offset, float zoom) {
         setColor(data.colour != null ? data.colour : Color.WHITE);
         setX(baseLocation.x + (offset.x * zoom));

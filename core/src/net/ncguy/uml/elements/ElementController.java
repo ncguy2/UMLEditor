@@ -11,7 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.DragListener;
 import net.ncguy.uml.UMLLauncher;
 import net.ncguy.uml.components.CornerActor;
 import net.ncguy.uml.components.LineActor;
-import net.ncguy.uml.display.MainDisplay;
+import net.ncguy.uml.display.UseCaseDisplay;
 
 import static net.ncguy.uml.elements.ElementController.PointIndex.*;
 
@@ -24,7 +24,7 @@ public class ElementController extends Actor {
     public Vector2[] points;
     public CornerActor[] cornerActors;
     public Actor controlledElement;
-    public MainDisplay parent;
+    public UseCaseDisplay parent;
     public Stage stage;
     public LineActor[] lines;
     public boolean cornersAdded = false, linesAdded = false;
@@ -34,7 +34,7 @@ public class ElementController extends Actor {
 
     private ObjectDragListener dragListener;
 
-    public ElementController(MainDisplay parent) {
+    public ElementController(UseCaseDisplay parent) {
         super();
         this.parent = parent;
         points = new Vector2[PointIndex.values().length];
@@ -136,7 +136,7 @@ public class ElementController extends Actor {
     public void assertBody(boolean updateElement) {
         Actor e = controlledElement;
         if(e == null) return;
-        float z = UMLLauncher.instance.display.zoom;
+        float z = UMLLauncher.instance.useCaseDisplay.zoom;
 
         float x, y, w, h;
         x = e.getX();
@@ -153,7 +153,7 @@ public class ElementController extends Actor {
 
         if(updateElement) {
             if(controlledElement instanceof EditorElement) {
-                Vector2 o = UMLLauncher.instance.display.uiStageOffset;
+                Vector2 o = UMLLauncher.instance.useCaseDisplay.uiStageOffset;
                 ((EditorElement) controlledElement).setBasePosition(getX() - (o.x / z), getY() - (o.y / z));
 //                ((EditorElement) controlledElement).redraw(o);
             }else{
@@ -172,7 +172,7 @@ public class ElementController extends Actor {
             }
         }
         if(originKey == null) return;
-        float z = UMLLauncher.instance.display.zoom;
+        float z = UMLLauncher.instance.useCaseDisplay.zoom;
         switch(originKey) {
             case BOTLEFT:
                 cornerActors[BOTRIGHT.ordinal()].setY(origin.getY());
@@ -204,7 +204,7 @@ public class ElementController extends Actor {
         if(controlledElement instanceof EditorElement){
             EditorElement e = (EditorElement)controlledElement;
 //            controlledElement.setSize(w/z, h/z);
-            Vector2 o = UMLLauncher.instance.display.uiStageOffset;
+            Vector2 o = UMLLauncher.instance.useCaseDisplay.uiStageOffset;
             e.setBaseX(getX() - (o.x * z));
             e.setBaseY(getY() - (o.y * z));
             e.setBaseW(getWidth() / z);
@@ -254,8 +254,8 @@ public class ElementController extends Actor {
     public static class ObjectDragListener extends DragListener {
         ElementController controller;
         Actor a;
-        MainDisplay parent;
-        public ObjectDragListener(ElementController controller, Actor a, MainDisplay parent) {
+        UseCaseDisplay parent;
+        public ObjectDragListener(ElementController controller, Actor a, UseCaseDisplay parent) {
             super();
             this.controller = controller;
             this.a = a;
@@ -274,9 +274,9 @@ public class ElementController extends Actor {
             float y = Gdx.graphics.getHeight() - Gdx.input.getY();
             System.out.println("ObjectDragListener.touchDragged >> ");
             System.out.println(String.format("\tOriginal: %s", parent.uiStageOffset.x));
-            System.out.println(String.format("\tModified [%s]: %s", parent.zoom, parent.uiStageOffset.x/UMLLauncher.instance.display.zoom));
-            float modX = ((x - a.getOriginX()))-(parent.uiStageOffset.x*UMLLauncher.instance.display.zoom);
-            float modY = ((y - a.getOriginY()))-(parent.uiStageOffset.y*UMLLauncher.instance.display.zoom);
+            System.out.println(String.format("\tModified [%s]: %s", parent.zoom, parent.uiStageOffset.x/UMLLauncher.instance.useCaseDisplay.zoom));
+            float modX = ((x - a.getOriginX()))-(parent.uiStageOffset.x*UMLLauncher.instance.useCaseDisplay.zoom);
+            float modY = ((y - a.getOriginY()))-(parent.uiStageOffset.y*UMLLauncher.instance.useCaseDisplay.zoom);
 
 //            for(EditorElement e : parent.elements)
 //                e.redraw(parent.uiStageOffset, parent.zoom);
@@ -304,7 +304,7 @@ public class ElementController extends Actor {
 
     public static class CornerDragListener extends ObjectDragListener {
         CornerActor c;
-        public CornerDragListener(CornerActor c, ElementController controller, Actor a, MainDisplay parent) {
+        public CornerDragListener(CornerActor c, ElementController controller, Actor a, UseCaseDisplay parent) {
             super(controller, a, parent);
             this.c = c;
         }

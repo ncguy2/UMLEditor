@@ -71,10 +71,10 @@ public class ColourWindow implements InputProcessor {
 
     public VisWindow fadeIn(String eventId) {
         this.eventId = eventId;
-        if(!UMLLauncher.instance.display.multiplexer.getProcessors().contains(this, true))
-            UMLLauncher.instance.display.multiplexer.addProcessor(0, this);
+        if(!UMLLauncher.instance.useCaseDisplay.multiplexer.getProcessors().contains(this, true))
+            UMLLauncher.instance.useCaseDisplay.multiplexer.addProcessor(0, this);
         colWin.setVisible(true);
-        Actor a = UMLLauncher.instance.display.currentElement;
+        Actor a = UMLLauncher.instance.useCaseDisplay.currentElement;
         Color defCol = new Color();
         if(a instanceof EditorElement) {
             EditorElement e = (EditorElement)a;
@@ -86,8 +86,8 @@ public class ColourWindow implements InputProcessor {
         return colWin.fadeIn();
     }
     public void bail() {
-        if(UMLLauncher.instance.display.multiplexer.getProcessors().contains(this, true))
-            UMLLauncher.instance.display.multiplexer.removeProcessor(this);
+        if(UMLLauncher.instance.useCaseDisplay.multiplexer.getProcessors().contains(this, true))
+            UMLLauncher.instance.useCaseDisplay.multiplexer.removeProcessor(this);
     }
 
     @Override
