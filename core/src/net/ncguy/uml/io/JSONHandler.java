@@ -41,7 +41,7 @@ public class JSONHandler {
     public WorkspaceData loadElements(String filepath) {
         String json = load(filepath);
         WorkspaceData workspaceData = gson.fromJson(json, WorkspaceData.class);
-        for(EditorElement.Data data : workspaceData.elementData) {
+        for(EditorElement.Data data : workspaceData.useCase_elementData) {
             try {
                 Object obj = data.type.getCtor().newInstance();
                 if(obj instanceof EditorElement) {
@@ -53,7 +53,7 @@ public class JSONHandler {
                     e.baseLocation.y = data.baseY;
                     e.baseSize.x = data.baseW;
                     e.baseSize.y = data.baseH;
-                    workspaceData.elements.add(e);
+                    workspaceData.useCase_elements.add(e);
                 }
             }catch(Exception exc) {
                 exc.printStackTrace();
@@ -63,14 +63,14 @@ public class JSONHandler {
     }
 
     public EditorElement getElementFromName(String name, WorkspaceData data) {
-        for(EditorElement e : data.elements) {
+        for(EditorElement e : data.useCase_elements) {
             if(e.data.name.equalsIgnoreCase(name)) return e;
         }
         return null;
     }
 
     public void save(String filePath, WorkspaceData workspaceData) {
-        ArrayList<EditorElement> elements = workspaceData.elements;
+        ArrayList<EditorElement> elements = workspaceData.useCase_elements;
         EditorElement.Data[] datas = new EditorElement.Data[elements.size()];
         int index = 0;
 
@@ -79,7 +79,7 @@ public class JSONHandler {
             datas[index++] = e.data;
         }
         for(EditorElement.Data data : datas) {
-            workspaceData.elementData.add(data);
+            workspaceData.useCase_elementData.add(data);
         }
         String json = gson.toJson(workspaceData);
         try{

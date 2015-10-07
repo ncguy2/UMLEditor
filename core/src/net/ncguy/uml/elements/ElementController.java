@@ -244,7 +244,7 @@ public class ElementController extends Actor {
                 EditorElement e = (EditorElement)ctrl.parent.currentElement;
                 ctrl.parent.dataDialog.getTitleLabel().setText(e.data.name);
                 ctrl.parent.dataDialog_name.setText(e.data.name);
-                ctrl.parent.dataDialog_contents.setText(e.data.contents);
+                ctrl.parent.dataDialog_contents.setText(e.data.contents.toString());
                 ctrl.parent.dataDialog.setBounds((Gdx.graphics.getWidth()/2)-500, (Gdx.graphics.getHeight()/2)-275, 1000, 550);
                 ctrl.parent.dataDialog.setVisible(true);
             }
@@ -278,7 +278,7 @@ public class ElementController extends Actor {
             float modX = ((x - a.getOriginX()))-(parent.uiStageOffset.x*UMLLauncher.instance.useCaseDisplay.zoom);
             float modY = ((y - a.getOriginY()))-(parent.uiStageOffset.y*UMLLauncher.instance.useCaseDisplay.zoom);
 
-//            for(EditorElement e : parent.elements)
+//            for(EditorElement e : parent.useCase_elements)
 //                e.redraw(parent.uiStageOffset, parent.zoom);
 
             if(a instanceof EditorElement){
@@ -296,7 +296,7 @@ public class ElementController extends Actor {
             super.touchUp(event, x, y, pointer, button);
 //            if (Tracker.isCursorOverActor(parent.delElementBtn)) {
 //                a.remove();
-//                parent.elements.removeValue(a, true);
+//                parent.useCase_elements.removeValue(a, true);
 //                parent.currentElement = null;
 //            }
         }
@@ -346,7 +346,7 @@ public class ElementController extends Actor {
             super.touchUp(event, x, y, pointer, button);
 //            if (Tracker.isCursorOverActor(parent.delElementBtn)) {
 //                a.remove();
-//                parent.elements.removeValue(a, true);
+//                parent.useCase_elements.removeValue(a, true);
 //                parent.currentElement = null;
 //            }
         }

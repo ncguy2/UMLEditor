@@ -10,12 +10,18 @@ import java.util.ArrayList;
  */
 public class WorkspaceData {
 
-    public ArrayList<EditorElement.Data> elementData;
-    transient public ArrayList<EditorElement> elements;
+    public ArrayList<EditorElement.Data> useCase_elementData;
+    transient public ArrayList<EditorElement> useCase_elements;
+
+    public ArrayList<EditorElement.Data> classDiagram_elementData;
+    transient public ArrayList<EditorElement> classDiagram_elements;
 
     public WorkspaceData() {
-        elementData = new ArrayList<>();
-        elements = new ArrayList<>();
+        useCase_elementData = new ArrayList<>();
+        useCase_elements = new ArrayList<>();
+
+        classDiagram_elementData = new ArrayList<>();
+        classDiagram_elements = new ArrayList<>();
     }
 
 }

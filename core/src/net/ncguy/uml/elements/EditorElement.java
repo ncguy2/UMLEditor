@@ -173,7 +173,7 @@ public class EditorElement extends Group implements IConfigurable {
     public static class Data {
         public String name;
         public Color colour;
-        public String contents;
+        public Object contents;
         public ElementTypes type;
         public ArrayList<LineData> lineData;
 
