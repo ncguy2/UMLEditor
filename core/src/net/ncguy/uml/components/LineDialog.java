@@ -32,11 +32,13 @@ public class LineDialog extends VisWindow {
     private LineData currentLine;
 
     private VisList<LineData> lineDataList;
+    private VisList<LineData> reverseLineDataList;
     private VisScrollPane lineScrollPane;
 
     private VisImageButton closeBtn;
 
     private VisImageButton newLineBtn, delLineBtn;
+    private VisTextButton toggleReverseBtn;
 
     private static final Vector2 size = new Vector2(700, 400);
 
@@ -71,6 +73,7 @@ public class LineDialog extends VisWindow {
     private void initUI() {
         closeBtn = new VisImageButton(Assets.getIcon(Icons.EXIT));
         lineDataList = new VisList<>();
+        reverseLineDataList = new VisList<>();
         lineScrollPane = new VisScrollPane(lineDataList);
         formTable = new VisTable(true);
         nameLbl = new VisLabel("Line ID");
@@ -86,6 +89,7 @@ public class LineDialog extends VisWindow {
         lineTypeLbl = new VisLabel("Line Type");
         lineTypeSelect = new VisSelectBox<>();
         changeColourBtn = new VisTextButton("Change Colour");
+        toggleReverseBtn = new VisTextButton("Reverse search", "toggle");
 
         newLineBtn = new VisImageButton(Assets.getIcon(Icons.LAYER_ADD));
         delLineBtn = new VisImageButton(Assets.getIcon(Icons.LAYER_REMOVE));
@@ -170,6 +174,19 @@ public class LineDialog extends VisWindow {
                 populateList();
             }
         });
+        toggleReverseBtn.addListener(new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                super.clicked(event, x, y);
+                if(lineScrollPane.getWidget().hashCode() == reverseLineDataList.hashCode()) {
+                    lineScrollPane.setWidget(lineDataList);
+                }else{
+                    lineScrollPane.setWidget(reverseLineDataList);
+                }
+                System.out.println("Current Scrollable element: "+lineScrollPane.getWidget().toString());
+                populateList();
+            }
+        });
 
         localAnchorSelect.setItems(AnchorPoints.values());
         remoteAnchorSelect.setItems(AnchorPoints.values());
@@ -205,6 +222,7 @@ public class LineDialog extends VisWindow {
         add(newLineBtn, delLineBtn);
         add(formTable);
         add(changeColourBtn);
+        add(toggleReverseBtn);
 
         EventHandler.addEventToHandler("updateColour.lineDialog", (args) -> {
             if(currentElement == null) return;
@@ -223,6 +241,7 @@ public class LineDialog extends VisWindow {
         newLineBtn.setBounds(204, (getHeight()-getPadTop())-32, 30, 30);
         delLineBtn.setBounds(204, (getHeight()-getPadTop())-64, 30, 30);
         changeColourBtn.setBounds(204, 2, 150, 30);
+        toggleReverseBtn.setBounds(204, (getHeight()-getPadTop())-96, 150, 30);
         super.draw(batch, parentAlpha);
     }
 
@@ -242,6 +261,24 @@ public class LineDialog extends VisWindow {
         }
         this.lineDataList.setItems(data);
         this.lineDataList.setSelectedIndex(-1);
+
+        this.reverseLineDataList.clearItems();
+        ArrayList<LineData> lineIndex = UMLLauncher.instance.useCaseDisplay.lineIndex;
+        ArrayList<LineData> revLineIndex = new ArrayList<>();
+        index = 0;
+        for(LineData d : lineIndex) {
+            if(!d.parentActor.equals(currentElement) && d.remoteActor.equals(currentElement))
+                revLineIndex.add(d);
+        }
+        LineData[] revData = new LineData[revLineIndex.size()];
+        for(LineData d : revLineIndex)
+            revData[index++] = d;
+
+        this.reverseLineDataList.setItems(revData);
+        this.reverseLineDataList.setSelectedIndex(-1);
+
+        currentLine = null;
+
         updateSelected();
     }
 

@@ -49,6 +49,7 @@ public class JSONHandler {
                     data.element = e;
 
                     e.data = data;
+                    e.data.contents = e.data.contents == null ? "" : e.data.contents;
                     e.baseLocation.x = data.baseX;
                     e.baseLocation.y = data.baseY;
                     e.baseSize.x = data.baseW;

@@ -1,7 +1,6 @@
 package net.ncguy.uml.elements;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
@@ -14,6 +13,7 @@ import net.ncguy.uml.UMLLauncher;
 import net.ncguy.uml.api.IConfigurable;
 import net.ncguy.uml.elements.data.LineData;
 import net.ncguy.uml.global.AnchorPoints;
+import net.ncguy.uml.global.Sprites;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -32,7 +32,8 @@ public class EditorElement extends Group implements IConfigurable {
     public ArrayList<LineData> linedata;
 
     public EditorElement() {
-        sprite = new Sprite(new Texture("assets/components/generic.png"));
+//        sprite = new Sprite(new Texture("assets/components/generic.png"));
+        sprite = new Sprite(Sprites.useCase);
         setSize(sprite.getWidth(), sprite.getHeight());
         baseLocation = new Vector2();
         baseSize = new Vector2(sprite.getWidth(), sprite.getHeight());
@@ -45,6 +46,9 @@ public class EditorElement extends Group implements IConfigurable {
         data.lineData = new ArrayList<>();
         addActor(baseLocationLbl);
         setColor(data.colour != null ? data.colour : Color.WHITE);
+        baseSize.x = baseSize.y = 128;
+        sprite.setSize(baseSize.x, baseSize.y);
+        setSize(baseSize.x, baseSize.y);
     }
 
     public LineData addLine() {

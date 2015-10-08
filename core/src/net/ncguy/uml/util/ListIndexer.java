@@ -1,6 +1,5 @@
 package net.ncguy.uml.util;
 
-import net.ncguy.uml.UMLLauncher;
 import net.ncguy.uml.elements.EditorElement;
 import net.ncguy.uml.elements.data.LineData;
 
@@ -15,15 +14,31 @@ import java.util.Collection;
  */
 public class ListIndexer {
 
-    public static Thread indexThread;
+    private Thread indexThread;
+    private Object parentInstance;
+    private Field fieldIn;
+    private Field fieldOut;
+    private Class parentClass;
 
-    public static void start(Object parentInstance, String fieldInName, String fieldOutName) {
-        indexThread = new Thread(() -> {
+    private String fieldInName, fieldOutName;
+
+    private Runnable indexThreadRunnable;
+
+    public ListIndexer(Object parentInstance, String fieldInName, String fieldOutName) {
+        try {
+            this.parentInstance = parentInstance;
+            this.fieldInName = fieldInName;
+            this.fieldOutName = fieldOutName;
+            parentClass = Class.forName(parentInstance.getClass().getCanonicalName());
+            System.out.println("Fields in " + parentClass.getCanonicalName());
+            fieldIn = parentClass.getField(fieldInName);
+            fieldOut = parentClass.getField(fieldOutName);
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
+        indexThreadRunnable = () -> {
+            System.out.println("PreIndex: "+System.currentTimeMillis());
             try {
-                Class c = Class.forName(parentInstance.getClass().getCanonicalName());
-                System.out.println("Fields in " + c.getCanonicalName());
-                Field fieldIn = c.getField(fieldInName);
-                Field fieldOut = c.getField(fieldOutName);
                 if(fieldIn.get(parentInstance) instanceof Collection) {
                     if(fieldOut.get(parentInstance) instanceof Collection) {
                         if(fieldIn.getType().equals(fieldOut.getType())) {
@@ -32,7 +47,6 @@ public class ListIndexer {
                             for(Object itemIn : (Collection)fieldIn.get(parentInstance)) {
                                 itemsIn.add(itemIn);
                             }
-
                             for(Object obj : itemsIn) {
                                 if(obj instanceof EditorElement) {
                                     EditorElement e = (EditorElement)obj;
@@ -59,8 +73,13 @@ public class ListIndexer {
             }catch (Exception e) {
                 e.printStackTrace();
             }
-        });
-        indexThread.start();
+            System.out.println("PostIndex: "+System.currentTimeMillis());
+        };
     }
-
+    synchronized public void index() {
+        indexThread = new Thread(indexThreadRunnable);
+        System.out.println(indexThread.getState());
+        if(indexThread.getState() == Thread.State.NEW)
+            indexThread.start();
+    }
 }

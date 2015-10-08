@@ -21,6 +21,7 @@ import com.kotcrab.vis.ui.widget.file.FileChooserAdapter;
 import net.ncguy.uml.UMLLauncher;
 import net.ncguy.uml.components.LineDialog;
 import net.ncguy.uml.components.Panel;
+import net.ncguy.uml.components.VisProgressBarEvent;
 import net.ncguy.uml.drawable.Assets;
 import net.ncguy.uml.drawable.Icons;
 import net.ncguy.uml.elements.ActorElement;
@@ -80,12 +81,20 @@ public class UseCaseDisplay extends GenericDisplay {
     public FileChooser openFileChooser;
     public FileChooser saveFileChooser;
 
+    public ListIndexer indexer;
+    public VisProgressBarEvent indexTimer;
+
     @Override
     public void show() {
         super.show();
         index = 0;
         lineDialog = new LineDialog("Line editor");
         lineIndex = new ArrayList<>();
+
+        indexer = new ListIndexer(this, "elements", "lineIndex");
+
+        indexTimer = new VisProgressBarEvent(0, 10, 1, false, "indexTimer");
+        indexTimer.addEvent((args) -> indexer.index());
 
         openFileChooser = new FileChooser("Load file", FileChooser.Mode.OPEN);
         openFileChooser.setListener(new FileChooserAdapter() {
@@ -305,6 +314,7 @@ public class UseCaseDisplay extends GenericDisplay {
         stage.addActor(selObjLocLbl);
         stage.addActor(dataDialog);
         stage.addActor(lineDialog);
+        stage.addActor(indexTimer);
 
         addButton(delElementBtn);
         addButton(addGenericBtn);
@@ -396,19 +406,20 @@ public class UseCaseDisplay extends GenericDisplay {
             selObjLocLbl.setPosition(Gdx.graphics.getWidth() - selObjLocLbl.getWidth(), Gdx.graphics.getHeight() - selObjLocLbl.getHeight()-(camLocLbl.getHeight()));
         }
 
+        indexTimer.setPosition(0, 0);
+        indexTimer.setWidth(leftPaneWidth);
+//        indexTimer.increment();
+
         stage.setDebugAll(false);
         stage.act(delta);
         stage.draw();
 
         if(Gdx.input.isKeyJustPressed(Input.Keys.P)) {
-            ListIndexer.start(this, "elements", "lineIndex");
+            indexer.index();
         }
         if(Gdx.input.isKeyJustPressed(Input.Keys.O)) {
             System.out.println("Indexed Lines: ");
-            for(LineData line : lineIndex) {
-                System.out.println("\t"+line.name);
-
-            }
+            for(LineData line : lineIndex) System.out.println("\t"+line.name);
         }
     }
 

@@ -244,6 +244,7 @@ public class ElementController extends Actor {
                 EditorElement e = (EditorElement)ctrl.parent.currentElement;
                 ctrl.parent.dataDialog.getTitleLabel().setText(e.data.name);
                 ctrl.parent.dataDialog_name.setText(e.data.name);
+                e.data.contents = e.data.contents == null ? "" : e.data.contents;
                 ctrl.parent.dataDialog_contents.setText(e.data.contents.toString());
                 ctrl.parent.dataDialog.setBounds((Gdx.graphics.getWidth()/2)-500, (Gdx.graphics.getHeight()/2)-275, 1000, 550);
                 ctrl.parent.dataDialog.setVisible(true);

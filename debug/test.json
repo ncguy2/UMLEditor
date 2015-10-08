@@ -1,1 +1,208 @@
-{"elementData":[{"name":"Ball","colour":{"r":0.20784314,"g":0.2509804,"b":0.1882353,"a":1.0},"contents":"This is a ball.\nThis ball hates that guy over there.\nThis ball thinks he is too tall.\n\nThis ball also thinks that the guy should untie it, letting this ball run free.","type":"GENERIC","lineData":[],"baseX":776.0,"baseY":83.0,"baseW":128.0,"baseH":128.0},{"name":"That guy","colour":{"r":0.36078432,"g":0.03529412,"b":0.03529412,"a":1.0},"type":"ACTOR","lineData":[{"name":"Line to ball","localAnchor":{"x":0.5,"y":0.5},"remoteAnchor":{"x":0.5,"y":1.0},"remoteActorName":"Ball","lineType":"INCLUDE","colour":{"r":0.4117647,"g":0.21176471,"b":0.65882355,"a":0.36078432}}],"baseX":399.0001,"baseY":235.99994,"baseW":128.0,"baseH":128.0}]}
+{
+  "useCase_elementData": [
+    {
+      "name": "Ball",
+      "colour": {
+        "r": 0.20784314,
+        "g": 0.2509804,
+        "b": 0.1882353,
+        "a": 1.0
+      },
+      "contents": "This is a ball.\nThis ball hates that guy over there.\nThis ball thinks he is too tall.\n\nThis ball also thinks that the guy should untie it, letting this ball run free.",
+      "type": "GENERIC",
+      "lineData": [],
+      "baseX": 462.00003,
+      "baseY": 425.0,
+      "baseW": 1482.3837,
+      "baseH": 96.92351
+    },
+    {
+      "name": "That guy",
+      "colour": {
+        "r": 0.36078432,
+        "g": 0.03529412,
+        "b": 0.03529412,
+        "a": 1.0
+      },
+      "type": "ACTOR",
+      "lineData": [
+        {
+          "name": "Mid -\u003e TopLeft",
+          "localAnchor": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "remoteAnchor": {
+            "x": 0.0,
+            "y": 1.0
+          },
+          "remoteActorName": "Ball",
+          "lineType": "INCLUDE",
+          "colour": {
+            "r": 1.0,
+            "g": 1.0,
+            "b": 1.0,
+            "a": 1.0
+          }
+        },
+        {
+          "name": "Mid -\u003e Top",
+          "localAnchor": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "remoteAnchor": {
+            "x": 0.5,
+            "y": 1.0
+          },
+          "remoteActorName": "Ball",
+          "lineType": "ASSOCIATE",
+          "colour": {
+            "r": 1.0,
+            "g": 1.0,
+            "b": 1.0,
+            "a": 1.0
+          }
+        },
+        {
+          "name": "Mid -\u003e TopRight",
+          "localAnchor": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "remoteAnchor": {
+            "x": 1.0,
+            "y": 1.0
+          },
+          "remoteActorName": "Ball",
+          "lineType": "ASSOCIATE",
+          "colour": {
+            "r": 1.0,
+            "g": 1.0,
+            "b": 1.0,
+            "a": 1.0
+          }
+        },
+        {
+          "name": "Mid -\u003e MidLeft",
+          "localAnchor": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "remoteAnchor": {
+            "x": 0.0,
+            "y": 0.5
+          },
+          "remoteActorName": "Ball",
+          "lineType": "ASSOCIATE",
+          "colour": {
+            "r": 1.0,
+            "g": 1.0,
+            "b": 1.0,
+            "a": 1.0
+          }
+        },
+        {
+          "name": "Mid -\u003e Mid",
+          "localAnchor": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "remoteAnchor": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "remoteActorName": "Ball",
+          "lineType": "ASSOCIATE",
+          "colour": {
+            "r": 1.0,
+            "g": 1.0,
+            "b": 1.0,
+            "a": 1.0
+          }
+        },
+        {
+          "name": "Mid -\u003e MidRight",
+          "localAnchor": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "remoteAnchor": {
+            "x": 1.0,
+            "y": 0.5
+          },
+          "remoteActorName": "Ball",
+          "lineType": "ASSOCIATE",
+          "colour": {
+            "r": 1.0,
+            "g": 1.0,
+            "b": 1.0,
+            "a": 1.0
+          }
+        },
+        {
+          "name": "Mid -\u003e BotLeft",
+          "localAnchor": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "remoteAnchor": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "remoteActorName": "Ball",
+          "lineType": "ASSOCIATE",
+          "colour": {
+            "r": 1.0,
+            "g": 1.0,
+            "b": 1.0,
+            "a": 1.0
+          }
+        },
+        {
+          "name": "Mid \u003e Bot",
+          "localAnchor": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "remoteAnchor": {
+            "x": 0.5,
+            "y": 0.0
+          },
+          "remoteActorName": "Ball",
+          "lineType": "ASSOCIATE",
+          "colour": {
+            "r": 1.0,
+            "g": 1.0,
+            "b": 1.0,
+            "a": 1.0
+          }
+        },
+        {
+          "name": "Mid -\u003e BotRight",
+          "localAnchor": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "remoteAnchor": {
+            "x": 1.0,
+            "y": 0.0
+          },
+          "remoteActorName": "Ball",
+          "lineType": "ASSOCIATE",
+          "colour": {
+            "r": 1.0,
+            "g": 1.0,
+            "b": 1.0,
+            "a": 1.0
+          }
+        }
+      ],
+      "baseX": 673.0001,
+      "baseY": 603.9999,
+      "baseW": 645.8955,
+      "baseH": 345.59048
+    }
+  ],
+  "classDiagram_elementData": []
+}
