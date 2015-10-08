@@ -11,6 +11,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.DragListener;
 import net.ncguy.uml.UMLLauncher;
 import net.ncguy.uml.components.CornerActor;
 import net.ncguy.uml.components.LineActor;
+import net.ncguy.uml.display.ClassDiagramDisplay;
+import net.ncguy.uml.display.GenericDisplay;
 import net.ncguy.uml.display.UseCaseDisplay;
 
 import static net.ncguy.uml.elements.ElementController.PointIndex.*;
@@ -24,7 +26,7 @@ public class ElementController extends Actor {
     public Vector2[] points;
     public CornerActor[] cornerActors;
     public Actor controlledElement;
-    public UseCaseDisplay parent;
+    public GenericDisplay parent;
     public Stage stage;
     public LineActor[] lines;
     public boolean cornersAdded = false, linesAdded = false;
@@ -34,7 +36,7 @@ public class ElementController extends Actor {
 
     private ObjectDragListener dragListener;
 
-    public ElementController(UseCaseDisplay parent) {
+    public ElementController(GenericDisplay parent) {
         super();
         this.parent = parent;
         points = new Vector2[PointIndex.values().length];
@@ -136,7 +138,15 @@ public class ElementController extends Actor {
     public void assertBody(boolean updateElement) {
         Actor e = controlledElement;
         if(e == null) return;
-        float z = UMLLauncher.instance.useCaseDisplay.zoom;
+        Vector2 o = new Vector2();
+        float z = 1;
+        if(UMLLauncher.instance.getScreen() instanceof UseCaseDisplay) {
+            o = UMLLauncher.instance.useCaseDisplay.uiStageOffset;
+            z = UMLLauncher.instance.useCaseDisplay.zoom;
+        }else if(UMLLauncher.instance.getScreen() instanceof ClassDiagramDisplay) {
+            o = UMLLauncher.instance.classDiagramDisplay.uiStageOffset;
+            z = UMLLauncher.instance.classDiagramDisplay.zoom;
+        }
 
         float x, y, w, h;
         x = e.getX();
@@ -153,9 +163,7 @@ public class ElementController extends Actor {
 
         if(updateElement) {
             if(controlledElement instanceof EditorElement) {
-                Vector2 o = UMLLauncher.instance.useCaseDisplay.uiStageOffset;
                 ((EditorElement) controlledElement).setBasePosition(getX() - (o.x / z), getY() - (o.y / z));
-//                ((EditorElement) controlledElement).redraw(o);
             }else{
                 System.out.println("ControlledElement is not an instance of EditorElement");
             }
@@ -172,7 +180,15 @@ public class ElementController extends Actor {
             }
         }
         if(originKey == null) return;
-        float z = UMLLauncher.instance.useCaseDisplay.zoom;
+        Vector2 o = new Vector2();
+        float z = 1;
+        if(UMLLauncher.instance.getScreen() instanceof UseCaseDisplay) {
+            o = UMLLauncher.instance.useCaseDisplay.uiStageOffset;
+            z = UMLLauncher.instance.useCaseDisplay.zoom;
+        }else if(UMLLauncher.instance.getScreen() instanceof ClassDiagramDisplay) {
+            o = UMLLauncher.instance.classDiagramDisplay.uiStageOffset;
+            z = UMLLauncher.instance.classDiagramDisplay.zoom;
+        }
         switch(originKey) {
             case BOTLEFT:
                 cornerActors[BOTRIGHT.ordinal()].setY(origin.getY());
@@ -204,7 +220,6 @@ public class ElementController extends Actor {
         if(controlledElement instanceof EditorElement){
             EditorElement e = (EditorElement)controlledElement;
 //            controlledElement.setSize(w/z, h/z);
-            Vector2 o = UMLLauncher.instance.useCaseDisplay.uiStageOffset;
             e.setBaseX(getX() - (o.x * z));
             e.setBaseY(getY() - (o.y * z));
             e.setBaseW(getWidth() / z);
@@ -218,7 +233,6 @@ public class ElementController extends Actor {
         }
 //        assertBody(false);
     }
-
 
     public PointIndex getKeyOfCorner(CornerActor corner) {
         PointIndex originKey = null;
@@ -245,7 +259,8 @@ public class ElementController extends Actor {
                 ctrl.parent.dataDialog.getTitleLabel().setText(e.data.name);
                 ctrl.parent.dataDialog_name.setText(e.data.name);
                 e.data.contents = e.data.contents == null ? "" : e.data.contents;
-                ctrl.parent.dataDialog_contents.setText(e.data.contents.toString());
+//                ctrl.parent.dataDialog_contents.setText(e.data.contents.toString());
+                e.contentHandle(ctrl.parent.dataDialog_contents);
                 ctrl.parent.dataDialog.setBounds((Gdx.graphics.getWidth()/2)-500, (Gdx.graphics.getHeight()/2)-275, 1000, 550);
                 ctrl.parent.dataDialog.setVisible(true);
             }
@@ -255,8 +270,8 @@ public class ElementController extends Actor {
     public static class ObjectDragListener extends DragListener {
         ElementController controller;
         Actor a;
-        UseCaseDisplay parent;
-        public ObjectDragListener(ElementController controller, Actor a, UseCaseDisplay parent) {
+        GenericDisplay parent;
+        public ObjectDragListener(ElementController controller, Actor a, GenericDisplay parent) {
             super();
             this.controller = controller;
             this.a = a;
@@ -275,9 +290,9 @@ public class ElementController extends Actor {
             float y = Gdx.graphics.getHeight() - Gdx.input.getY();
             System.out.println("ObjectDragListener.touchDragged >> ");
             System.out.println(String.format("\tOriginal: %s", parent.uiStageOffset.x));
-            System.out.println(String.format("\tModified [%s]: %s", parent.zoom, parent.uiStageOffset.x/UMLLauncher.instance.useCaseDisplay.zoom));
-            float modX = ((x - a.getOriginX()))-(parent.uiStageOffset.x*UMLLauncher.instance.useCaseDisplay.zoom);
-            float modY = ((y - a.getOriginY()))-(parent.uiStageOffset.y*UMLLauncher.instance.useCaseDisplay.zoom);
+            System.out.println(String.format("\tModified [%s]: %s", parent.zoom, parent.uiStageOffset.x/parent.zoom));
+            float modX = ((x - a.getOriginX()))-(parent.uiStageOffset.x*parent.zoom);
+            float modY = ((y - a.getOriginY()))-(parent.uiStageOffset.y*parent.zoom);
 
 //            for(EditorElement e : parent.useCase_elements)
 //                e.redraw(parent.uiStageOffset, parent.zoom);
@@ -305,7 +320,7 @@ public class ElementController extends Actor {
 
     public static class CornerDragListener extends ObjectDragListener {
         CornerActor c;
-        public CornerDragListener(CornerActor c, ElementController controller, Actor a, UseCaseDisplay parent) {
+        public CornerDragListener(CornerActor c, ElementController controller, Actor a, GenericDisplay parent) {
             super(controller, a, parent);
             this.c = c;
         }

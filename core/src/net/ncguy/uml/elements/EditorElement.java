@@ -4,13 +4,16 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.ui.TextArea;
 import com.badlogic.gdx.utils.Array;
 import com.kotcrab.vis.ui.widget.VisLabel;
 import com.kotcrab.vis.ui.widget.VisSelectBox;
 import com.kotcrab.vis.ui.widget.VisTable;
 import net.ncguy.uml.UMLLauncher;
 import net.ncguy.uml.api.IConfigurable;
+import net.ncguy.uml.display.GenericDisplay;
 import net.ncguy.uml.elements.data.LineData;
 import net.ncguy.uml.global.AnchorPoints;
 import net.ncguy.uml.global.Sprites;
@@ -30,6 +33,7 @@ public class EditorElement extends Group implements IConfigurable {
     VisLabel baseLocationLbl;
     public Data data;
     public ArrayList<LineData> linedata;
+    public GenericDisplay parentDisplay;
 
     public EditorElement() {
 //        sprite = new Sprite(new Texture("assets/components/generic.png"));
@@ -49,6 +53,12 @@ public class EditorElement extends Group implements IConfigurable {
         baseSize.x = baseSize.y = 128;
         sprite.setSize(baseSize.x, baseSize.y);
         setSize(baseSize.x, baseSize.y);
+
+        if(UMLLauncher.instance.getScreen() instanceof GenericDisplay) {
+            parentDisplay = (GenericDisplay)UMLLauncher.instance.getScreen();
+        }else{
+            parentDisplay = parentDisplay;
+        }
     }
 
     public LineData addLine() {
@@ -61,7 +71,7 @@ public class EditorElement extends Group implements IConfigurable {
     }
     public void loadLine(LineData line) {
         line.parentActor = this;
-        for(EditorElement e : UMLLauncher.instance.useCaseDisplay.elements) {
+        for(EditorElement e : parentDisplay.elements) {
             if(e.data.name.equalsIgnoreCase(line.remoteActorName)) {
                 line.remoteActor = e;
                 break;
@@ -79,37 +89,37 @@ public class EditorElement extends Group implements IConfigurable {
 
     public void setBasePosition(float x, float y) {
         baseLocation.set(x, y);
-        redraw(UMLLauncher.instance.useCaseDisplay.uiStageOffset);
+        redraw(parentDisplay.uiStageOffset);
     }
 
     public void setBasePosition(float x, float y, int alignment) {
         baseLocation.set(x, y);
-        redraw(UMLLauncher.instance.useCaseDisplay.uiStageOffset);
+        redraw(parentDisplay.uiStageOffset);
     }
 
     public void setBaseBounds(float x, float y, float w, float h) {
         baseLocation.set(x, y);
         baseSize.set(w, h);
-        redraw(UMLLauncher.instance.useCaseDisplay.uiStageOffset);
+        redraw(parentDisplay.uiStageOffset);
     }
 
     public void setBaseX(float x) {
         baseLocation.x = x;
-        redraw(UMLLauncher.instance.useCaseDisplay.uiStageOffset);
+        redraw(parentDisplay.uiStageOffset);
     }
 
     public void setBaseY(float y) {
         baseLocation.y = y;
-        redraw(UMLLauncher.instance.useCaseDisplay.uiStageOffset);
+        redraw(parentDisplay.uiStageOffset);
     }
 
     public void setBaseW(float w) {
         baseSize.x = w;
-        redraw(UMLLauncher.instance.useCaseDisplay.uiStageOffset);
+        redraw(parentDisplay.uiStageOffset);
     }
     public void setBaseH(float h) {
         baseSize.y = h;
-        redraw(UMLLauncher.instance.useCaseDisplay.uiStageOffset);
+        redraw(parentDisplay.uiStageOffset);
     }
 
     @Override
@@ -149,7 +159,7 @@ public class EditorElement extends Group implements IConfigurable {
     public float getBaseX() { return baseLocation.x; }
     public float getBaseY() { return baseLocation.y; }
 
-    public void redraw(Vector2 offset) { redraw(offset, UMLLauncher.instance.useCaseDisplay.zoom);}
+    public void redraw(Vector2 offset) { redraw(offset, parentDisplay.zoom);}
     public void redraw(Vector2 offset, float zoom) {
         setColor(data.colour != null ? data.colour : Color.WHITE);
         setX(baseLocation.x + (offset.x * zoom));
@@ -170,6 +180,12 @@ public class EditorElement extends Group implements IConfigurable {
         cfgTable.add(linedata);
 
         return cfgTable;
+    }
+
+    public void contentHandle(Actor contentActor) {
+        if(contentActor instanceof TextArea) {
+            ((TextArea)contentActor).setText(data.contents.toString());
+        }
     }
 
     @Override public String toString() { return data.name; }
