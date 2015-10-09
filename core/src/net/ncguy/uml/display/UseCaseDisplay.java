@@ -124,28 +124,7 @@ public class UseCaseDisplay extends GenericDisplay {
             }
         });
 
-        openLineDialogBtn = new VisTextButton("Line editor");
-        colEditBtn = new VisTextButton("Edit Colour");
-        openLineDialogBtn.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                if(currentElement == null) return;
-                if(!(currentElement instanceof EditorElement)) return;
-                EditorElement e = (EditorElement) currentElement;
-                lineDialog.setTitle(e.data.name);
-                lineDialog.setVisible(true);
-            }
-        });
-        colEditBtn.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                super.clicked(event, x, y);
-                stage.addActor(UMLLauncher.colourWindow.fadeIn("updateColour.Maindisplay"));
-            }
-        });
-        dataDialog_optionTable.add(openLineDialogBtn);
-        dataDialog_optionTable.row();
-        dataDialog_optionTable.add(colEditBtn);
+
 
         EventHandler.addEventToHandler("updateColour.Maindisplay", (args) -> {
             if(currentElement == null) return;
@@ -234,6 +213,7 @@ public class UseCaseDisplay extends GenericDisplay {
 
     @Override
     public void configureContent() {
+        dataDialog_contents = new VisTextArea();
         dataDialog_contents.addListener(new InputListener() {
             @Override
             public boolean keyTyped(InputEvent event, char c) {

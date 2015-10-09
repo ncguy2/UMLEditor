@@ -284,10 +284,10 @@ public class LineDialog extends VisWindow {
 
     public void updateSelected() {
         try {
-            EditorElement[] es = new EditorElement[UMLLauncher.instance.useCaseDisplay.elements.size()];
+            EditorElement[] es = new EditorElement[UMLLauncher.instance.getDisplay().elements.size()];
             es[0] = blankElement;
             int index = 1;
-            for(EditorElement e : UMLLauncher.instance.useCaseDisplay.elements) {
+            for(EditorElement e : UMLLauncher.instance.getDisplay().elements) {
                 if(e != currentElement)
                     es[index++] = e;
             }

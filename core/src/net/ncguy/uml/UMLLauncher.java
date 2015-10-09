@@ -4,6 +4,7 @@ import com.badlogic.gdx.Game;
 import com.kotcrab.vis.ui.VisUI;
 import net.ncguy.uml.components.sub.ColourWindow;
 import net.ncguy.uml.display.ClassDiagramDisplay;
+import net.ncguy.uml.display.GenericDisplay;
 import net.ncguy.uml.display.UseCaseDisplay;
 import net.ncguy.uml.drawable.Assets;
 import net.ncguy.uml.global.Sprites;
@@ -48,5 +49,11 @@ public class UMLLauncher extends Game {
 		useCaseDisplay = new UseCaseDisplay();
 		classDiagramDisplay = new ClassDiagramDisplay();
 		setScreen(useCaseDisplay);
+	}
+
+	public GenericDisplay getDisplay() {
+		if(instance.getScreen() instanceof GenericDisplay)
+			return (GenericDisplay)instance.getScreen();
+		return useCaseDisplay;
 	}
 }

@@ -17,6 +17,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.DragListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.kotcrab.vis.ui.widget.*;
+import net.ncguy.uml.UMLLauncher;
 import net.ncguy.uml.components.LineDialog;
 import net.ncguy.uml.components.Panel;
 import net.ncguy.uml.components.VisProgressBarEvent;
@@ -176,7 +177,6 @@ public class GenericDisplay implements Screen {
         dataDialog_optionTable = new VisTable(true);
         dataDialog_optionPane = new VisScrollPane(dataDialog_optionTable);
         dataDialog_exit = new VisImageButton(Assets.getIcon(Icons.EXIT));
-        dataDialog_contents = new VisTextArea();
         dataDialog_exit.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -209,6 +209,29 @@ public class GenericDisplay implements Screen {
 //        dataDialog_table.setBounds(0, 0, dataDialog.getH);
         dataDialog.addActor(dataDialog_table);
 
+        openLineDialogBtn = new VisTextButton("Line editor");
+        colEditBtn = new VisTextButton("Edit Colour");
+        openLineDialogBtn.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if(currentElement == null) return;
+                if(!(currentElement instanceof EditorElement)) return;
+                EditorElement e = (EditorElement) currentElement;
+                lineDialog.setTitle(e.data.name);
+                lineDialog.setVisible(true);
+            }
+        });
+        colEditBtn.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                super.clicked(event, x, y);
+                stage.addActor(UMLLauncher.colourWindow.fadeIn("updateColour.Maindisplay"));
+            }
+        });
+        dataDialog_optionTable.add(openLineDialogBtn);
+        dataDialog_optionTable.row();
+        dataDialog_optionTable.add(colEditBtn);
+
         dataDialog.setVisible(false);
 
         stage.addActor(dataDialog);
@@ -231,7 +254,7 @@ public class GenericDisplay implements Screen {
     }
 
     public void configureContent() {
-
+        dataDialog_contents = new Actor();
     }
 
     @Override
@@ -247,7 +270,7 @@ public class GenericDisplay implements Screen {
         stage.draw();
 
 
-        uiStage.setDebugAll(true);
+        uiStage.setDebugAll(false);
     }
 
     public void changeActiveActor(Actor a) {}
