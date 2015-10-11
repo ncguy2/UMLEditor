@@ -3,6 +3,7 @@ package net.ncguy.uml.event;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by ncguy on 21/09/2015 at 18:24,
@@ -46,6 +47,19 @@ public class EventHandler {
             System.out.println("\t"+event.getClass().getCanonicalName());
             event.run(args);
         }
+        System.out.println(fetchAllEvents());
+    }
+
+    public static String fetchAllEvents() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Event handler@").append(EventHandler.class.hashCode()).append("\n");
+        for(Map.Entry<String, List<IEvent>> entry : registeredHandlers.entrySet()) {
+            sb.append("\t").append(entry.getKey()).append("\n");
+            for(IEvent event : entry.getValue()) {
+                sb.append("\t\t").append(event.toString()).append("\n");
+            }
+        }
+        return sb.toString();
     }
 
 }

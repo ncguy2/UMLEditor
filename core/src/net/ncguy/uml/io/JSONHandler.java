@@ -10,7 +10,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
 
 /**
  * Created by Nick on 01/10/2015 at 18:49,
@@ -18,12 +17,19 @@ import java.util.ArrayList;
  */
 public class JSONHandler {
 
-    Gson gson;
+    private static Gson gson;
+
+    public static Gson gson() {
+        if(gson == null) {
+            if(UMLLauncher.prettyJson)
+                gson = new GsonBuilder().setPrettyPrinting().create();
+            else gson = new Gson();
+        }
+        return gson;
+    }
 
     public JSONHandler() {
-        if(UMLLauncher.prettyJson)
-            gson = new GsonBuilder().setPrettyPrinting().create();
-        else gson = new Gson();
+        gson();
     }
 
     public String load(String filePath) {
@@ -41,25 +47,7 @@ public class JSONHandler {
     public WorkspaceData loadElements(String filepath) {
         String json = load(filepath);
         WorkspaceData workspaceData = gson.fromJson(json, WorkspaceData.class);
-        for(EditorElement.Data data : workspaceData.useCase_elementData) {
-            try {
-                Object obj = data.type.getCtor().newInstance();
-                if(obj instanceof EditorElement) {
-                    EditorElement e = (EditorElement)obj;
-                    data.element = e;
-
-                    e.data = data;
-                    e.data.contents = e.data.contents == null ? "" : e.data.contents;
-                    e.baseLocation.x = data.baseX;
-                    e.baseLocation.y = data.baseY;
-                    e.baseSize.x = data.baseW;
-                    e.baseSize.y = data.baseH;
-                    workspaceData.useCase_elements.add(e);
-                }
-            }catch(Exception exc) {
-                exc.printStackTrace();
-            }
-        }
+        workspaceData.prepareForLoad();
         return workspaceData;
     }
 
@@ -71,17 +59,7 @@ public class JSONHandler {
     }
 
     public void save(String filePath, WorkspaceData workspaceData) {
-        ArrayList<EditorElement> elements = workspaceData.useCase_elements;
-        EditorElement.Data[] datas = new EditorElement.Data[elements.size()];
-        int index = 0;
-
-        for(EditorElement e : elements) {
-            e.prepareData();
-            datas[index++] = e.data;
-        }
-        for(EditorElement.Data data : datas) {
-            workspaceData.useCase_elementData.add(data);
-        }
+        workspaceData.prepareForSave();
         String json = gson.toJson(workspaceData);
         try{
             Files.write(new File(filePath).toPath(), json.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);

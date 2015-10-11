@@ -2,7 +2,6 @@ package net.ncguy.uml.components;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.kotcrab.vis.ui.widget.VisProgressBar;
-import com.sun.istack.internal.NotNull;
 import net.ncguy.uml.event.EventHandler;
 import net.ncguy.uml.event.IEvent;
 
@@ -22,7 +21,7 @@ public class VisProgressBarEvent extends VisProgressBar {
         setAnimateDuration(.2f);
     }
 
-    public void addEvent(@NotNull IEvent event) {
+    public void addEvent(IEvent event) {
         EventHandler.addEventToHandler(eventId, event);
     }
 

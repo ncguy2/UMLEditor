@@ -1,5 +1,6 @@
 package net.ncguy.uml.global;
 
+import net.ncguy.uml.UMLLauncher;
 import net.ncguy.uml.elements.EditorElement;
 
 import java.util.ArrayList;
@@ -22,6 +23,67 @@ public class WorkspaceData {
 
         classDiagram_elementData = new ArrayList<>();
         classDiagram_elements = new ArrayList<>();
+    }
+
+    public void prepareForLoad() {
+        for(EditorElement.Data data : useCase_elementData) {
+            try {
+                Object obj = data.type.getCtor().newInstance();
+                if(obj instanceof EditorElement) {
+                    EditorElement e = (EditorElement) obj;
+                    data.element = e;
+                    e.data = data;
+                    e.fetchData();
+                    useCase_elements.add(e);
+                }
+            }catch(Exception exc) {
+                exc.printStackTrace();
+            }
+        }
+        for(EditorElement.Data data : classDiagram_elementData) {
+            try{
+                Object obj = data.type.getCtor().newInstance();
+                if(obj instanceof EditorElement) {
+                    EditorElement e = (EditorElement)obj;
+                    data.element = e;
+                    e.data = data;
+                    e.fetchData();
+                    classDiagram_elements.add(e);
+                }
+            }catch(Exception exc) {
+                exc.printStackTrace();
+            }
+        }
+    }
+
+    public void prepareForSave() {
+        useCase_elements = UMLLauncher.instance.useCaseDisplay.elements;
+        classDiagram_elements = UMLLauncher.instance.classDiagramDisplay.elements;
+        // Use case
+        ArrayList<EditorElement> elements = useCase_elements;
+        EditorElement.Data[] datas = new EditorElement.Data[elements.size()];
+        int index = 0;
+
+        for(EditorElement e : elements) {
+            e.prepareData();
+            datas[index++] = e.data;
+        }
+        useCase_elementData.clear();
+        for(EditorElement.Data data : datas) {
+            useCase_elementData.add(data);
+        }
+        // Class diagram
+        elements = classDiagram_elements;
+        datas = new EditorElement.Data[elements.size()];
+        index = 0;
+        for(EditorElement e : elements) {
+            e.prepareData();
+            datas[index++] = e.data;
+        }
+        classDiagram_elementData.clear();
+        for(EditorElement.Data data : datas) {
+            classDiagram_elementData.add(data);
+        }
     }
 
 }

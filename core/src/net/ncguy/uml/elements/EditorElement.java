@@ -161,6 +161,8 @@ public class EditorElement extends Group implements IConfigurable {
 
     public void redraw(Vector2 offset) { redraw(offset, parentDisplay.zoom);}
     public void redraw(Vector2 offset, float zoom) {
+        if(offset == null) offset = UMLLauncher.instance.getDisplay().uiStageOffset;
+        if(zoom == 0) zoom = UMLLauncher.instance.getDisplay().zoom;
         setColor(data.colour != null ? data.colour : Color.WHITE);
         setX(baseLocation.x + (offset.x * zoom));
         setY(baseLocation.y + (offset.y * zoom));
@@ -190,6 +192,14 @@ public class EditorElement extends Group implements IConfigurable {
 
     @Override public String toString() { return data.name; }
 
+    public void fetchData() {
+        data.contents = data.contents == null ? "" : data.contents;
+        baseLocation.x = data.baseX;
+        baseLocation.y = data.baseY;
+        baseSize.x = data.baseW;
+        baseSize.y = data.baseH;
+    }
+
     public static class Data {
         public String name;
         public Color colour;
@@ -206,6 +216,7 @@ public class EditorElement extends Group implements IConfigurable {
     public enum ElementTypes {
         GENERIC(EditorElement.class),
         ACTOR(ActorElement.class),
+        CLASS(ClassElement.class),
         ;
         ElementTypes(Class clazz) {
             try{

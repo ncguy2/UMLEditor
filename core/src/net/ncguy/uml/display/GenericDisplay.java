@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -17,6 +18,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.DragListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.kotcrab.vis.ui.widget.*;
+import com.kotcrab.vis.ui.widget.file.FileChooser;
+import com.kotcrab.vis.ui.widget.file.FileChooserAdapter;
 import net.ncguy.uml.UMLLauncher;
 import net.ncguy.uml.components.LineDialog;
 import net.ncguy.uml.components.Panel;
@@ -27,9 +30,11 @@ import net.ncguy.uml.drawable.Icons;
 import net.ncguy.uml.elements.EditorElement;
 import net.ncguy.uml.elements.ElementController;
 import net.ncguy.uml.elements.data.LineData;
+import net.ncguy.uml.global.WorkspaceData;
 import net.ncguy.uml.io.JSONHandler;
 import net.ncguy.uml.util.ListIndexer;
 
+import java.io.File;
 import java.util.ArrayList;
 
 /**
@@ -38,6 +43,8 @@ import java.util.ArrayList;
  * Package: net.ncguy.uml.useCaseDisplay
  */
 public class GenericDisplay implements Screen {
+
+    public static WorkspaceData data = new WorkspaceData();
 
     JSONHandler jsonHandler;
     TaskMenu taskMenu;
@@ -67,11 +74,24 @@ public class GenericDisplay implements Screen {
     public VisTextButton colEditBtn;
     public VisTextButton openLineDialogBtn;
 
+    public VisTextButton zoomBtn, offsetBtn;
+    private VisImageButton openFileBtn, saveFileBtn;
+
+    private FileChooser openFileChooser;
+    private FileChooser saveFileChooser;
+
     VisTable buttonTable;
     VisScrollPane buttonScroll;
     VisList<EditorElement.Data> elementsTree;
 
     Panel leftPanelBg;
+
+    public GenericDisplay() {
+        elements = new ArrayList<>();
+        controller = new ElementController(this);
+        stage = new Stage(new ScreenViewport(new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight())));
+        uiStage = new Stage(new ScreenViewport(new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight())));
+    }
 
     @Override
     public void show() {
@@ -82,7 +102,102 @@ public class GenericDisplay implements Screen {
         stage = new Stage(new ScreenViewport(new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight())));
         uiStage = new Stage(new ScreenViewport(new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight())));
 
+        openFileChooser = new FileChooser("Load file", FileChooser.Mode.OPEN);
+        openFileChooser.setListener(new FileChooserAdapter() {
+            @Override
+            public void selected(FileHandle file) {
+                super.selected(file);
+                if(!file.exists()) return;
+                try {
+                    data = jsonHandler.loadElements(file.file().getAbsolutePath());
+                    // Use case display
+                    ArrayList<EditorElement> loadedElements = data.useCase_elements;
+                    UMLLauncher.instance.useCaseDisplay.elements.clear();
+                    UMLLauncher.instance.useCaseDisplay.controller.remove();
+                    for(EditorElement e : loadedElements) {
+                        e.addListener(new SelectionListener(e, UMLLauncher.instance.useCaseDisplay));
+                        UMLLauncher.instance.useCaseDisplay.elements.add(e);
+                        UMLLauncher.instance.useCaseDisplay.uiStage.addActor(e);
+                    }
+                    UMLLauncher.instance.useCaseDisplay.uiStage.addActor(controller);
+                    regrowTree();
+                    for(EditorElement e : loadedElements) {
+                        e.loadLinesFromData();
+                        e.redraw(UMLLauncher.instance.useCaseDisplay.uiStageOffset);
+                    }
+
+                    // Class diagram display
+                    loadedElements = data.classDiagram_elements;
+                    UMLLauncher.instance.classDiagramDisplay.elements.clear();
+                    UMLLauncher.instance.classDiagramDisplay.controller.remove();
+                    for(EditorElement e : loadedElements) {
+                        e.addListener(new SelectionListener(e, UMLLauncher.instance.classDiagramDisplay));
+                        UMLLauncher.instance.classDiagramDisplay.elements.add(e);
+                        UMLLauncher.instance.classDiagramDisplay.uiStage.addActor(e);
+                    }
+                    UMLLauncher.instance.classDiagramDisplay.uiStage.addActor(controller);
+                    regrowTree();
+                    for(EditorElement e : loadedElements) {
+                        e.loadLinesFromData();
+                        e.redraw(UMLLauncher.instance.classDiagramDisplay.uiStageOffset);
+                    }
+                }catch(Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        saveFileChooser = new FileChooser("Save file", FileChooser.Mode.SAVE);
+        saveFileChooser.setListener(new FileChooserAdapter() {
+            @Override
+            public void selected(FileHandle file) {
+                super.selected(file);
+                data.useCase_elements = UMLLauncher.instance.useCaseDisplay.elements;
+                data.classDiagram_elements = UMLLauncher.instance.classDiagramDisplay.elements;
+                jsonHandler.save(file.file().getAbsolutePath(), data);
+            }
+        });
+
+        openFileBtn = new VisImageButton(Assets.getIcon(Icons.LOAD));
+        saveFileBtn = new VisImageButton(Assets.getIcon(Icons.SAVE));
+
+        openFileBtn.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                openFileChooser.setDirectory(new File(""));
+                uiStage.addActor(openFileChooser.fadeIn());
+            }
+        });
+        saveFileBtn.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                saveFileChooser.setDirectory(new File(""));
+                uiStage.addActor(saveFileChooser.fadeIn());
+            }
+        });
+
         lineIndex = new ArrayList<>();
+        zoomBtn = new VisTextButton("Zoom: ");
+        offsetBtn = new VisTextButton("Offset: ");
+        zoomBtn.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                super.clicked(event, x, y);
+                zoom = 1;
+                for(EditorElement e : elements)
+                    e.redraw(uiStageOffset, zoom);
+                controller.assertBody(false);
+            }
+        });
+        offsetBtn.addListener(new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                super.clicked(event, x, y);
+                uiStageOffset.set(0, 0);
+                for(EditorElement e : elements)
+                    e.redraw(uiStageOffset, zoom);
+                controller.assertBody(false);
+            }
+        });
 
         indexer = new ListIndexer(this, "elements", "lineIndex");
 
@@ -134,6 +249,9 @@ public class GenericDisplay implements Screen {
         stage.addActor(elementsTree);
         stage.addActor(vertLeft);
         stage.addActor(indexTimer);
+
+        stage.addActor(zoomBtn);
+        stage.addActor(offsetBtn);
 
         uiStage.addActor(controller.addedToStage(uiStage));
 
@@ -225,7 +343,7 @@ public class GenericDisplay implements Screen {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 super.clicked(event, x, y);
-                stage.addActor(UMLLauncher.colourWindow.fadeIn("updateColour.Maindisplay"));
+                stage.addActor(UMLLauncher.colourWindow.fadeIn("updateColour." + UMLLauncher.instance.getDisplay().getClass().getSimpleName()));
             }
         });
         dataDialog_optionTable.add(openLineDialogBtn);
@@ -240,7 +358,9 @@ public class GenericDisplay implements Screen {
         stage.addListener(new InputListener() {
             @Override
             public boolean scrolled(InputEvent event, float x, float y, int amount) {
-                zoom -= Float.parseFloat(amount + "f") / 100;
+                if(Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) || Gdx.input.isKeyPressed(Input.Keys.CONTROL_RIGHT))
+                    zoom -= Float.parseFloat(amount + "f") / 100;
+                else zoom -= Float.parseFloat(amount + "f") / 10;
                 if(zoom < .01f) zoom = .01f;
                 if(zoom > 100) zoom = 100;
                 for(EditorElement e : elements)
@@ -249,6 +369,11 @@ public class GenericDisplay implements Screen {
                 return super.scrolled(event, x, y, amount);
             }
         });
+
+        index = 0;
+
+        addButton(openFileBtn);
+        addButton(saveFileBtn);
 
         for(EditorElement e : elements) e.redraw(uiStageOffset, zoom);
     }
@@ -263,12 +388,24 @@ public class GenericDisplay implements Screen {
         Gdx.gl.glClearColor(.2f, .2f, .2f, 1);
         taskMenu.getTable().setPosition(leftPaneWidth + 5, Gdx.graphics.getHeight() - 30);
         taskMenu.getTable().pack();
-
-        uiStage.act(delta);
-        uiStage.draw();
-        stage.act(delta);
-        stage.draw();
-
+        zoomBtn.setText(String.format("Zoom: %.2f", zoom));
+        zoomBtn.pack();
+        zoomBtn.setPosition(Gdx.graphics.getWidth() - (zoomBtn.getWidth() + 5), 5);
+        offsetBtn.setText(String.format("Offset: {%.2f, %.2f}", uiStageOffset.x, uiStageOffset.y));
+        offsetBtn.pack();
+        offsetBtn.setPosition(Gdx.graphics.getWidth()-(offsetBtn.getWidth()+5), (zoomBtn.getY()+zoomBtn.getHeight())+5);
+        try {
+            uiStage.act(delta);
+            uiStage.draw();
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
+        try{
+            stage.act(delta);
+            stage.draw();
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
 
         uiStage.setDebugAll(false);
     }
@@ -311,7 +448,7 @@ public class GenericDisplay implements Screen {
     public void addButton(Button btn) {
         buttonTable.add(btn).size(45);
         index++;
-        if(index % 4 == 0)
+        if(index % 3 == 0)
             buttonTable.row();
     }
 

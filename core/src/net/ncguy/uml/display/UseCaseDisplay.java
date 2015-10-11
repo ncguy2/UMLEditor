@@ -2,7 +2,6 @@ package net.ncguy.uml.display;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -10,8 +9,6 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.TextArea;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.kotcrab.vis.ui.widget.*;
-import com.kotcrab.vis.ui.widget.file.FileChooser;
-import com.kotcrab.vis.ui.widget.file.FileChooserAdapter;
 import net.ncguy.uml.UMLLauncher;
 import net.ncguy.uml.drawable.Assets;
 import net.ncguy.uml.drawable.Icons;
@@ -19,10 +16,6 @@ import net.ncguy.uml.elements.ActorElement;
 import net.ncguy.uml.elements.EditorElement;
 import net.ncguy.uml.elements.data.LineData;
 import net.ncguy.uml.event.EventHandler;
-import net.ncguy.uml.global.WorkspaceData;
-
-import java.io.File;
-import java.util.ArrayList;
 
 /**
  * Created by Nick on 30/09/2015 at 20:19,
@@ -35,73 +28,12 @@ public class UseCaseDisplay extends GenericDisplay {
 
     VisLabel camLocLbl, selObjLocLbl;
 
-    public VisImageButton openFileBtn, saveFileBtn;
     public VisImageButton addGenericBtn;
     public VisImageButton addActorBtn;
-
-    public FileChooser openFileChooser;
-    public FileChooser saveFileChooser;
 
     @Override
     public void show() {
         super.show();
-        index = 0;
-
-        openFileChooser = new FileChooser("Load file", FileChooser.Mode.OPEN);
-        openFileChooser.setListener(new FileChooserAdapter() {
-            @Override
-            public void selected(FileHandle file) {
-                super.selected(file);
-                if(!file.exists()) return;
-                try {
-                    WorkspaceData data = jsonHandler.loadElements(file.file().getAbsolutePath());
-                    ArrayList<EditorElement> loadedElements = data.useCase_elements;
-                    elements.clear();
-                    controller.remove();
-                    for(EditorElement e : loadedElements) {
-                        e.addListener(new SelectionListener(e, UMLLauncher.instance.useCaseDisplay));
-                        elements.add(e);
-                        uiStage.addActor(e);
-                    }
-                    uiStage.addActor(controller);
-                    regrowTree();
-                    for(EditorElement e : loadedElements) {
-                        e.loadLinesFromData();
-                        e.redraw(uiStageOffset);
-                    }
-                }catch(Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        saveFileChooser = new FileChooser("Save file", FileChooser.Mode.SAVE);
-        saveFileChooser.setListener(new FileChooserAdapter() {
-            @Override
-            public void selected(FileHandle file) {
-                super.selected(file);
-                WorkspaceData data = new WorkspaceData();
-                data.useCase_elements = elements;
-                jsonHandler.save(file.file().getAbsolutePath(), data);
-            }
-        });
-
-        openFileBtn = new VisImageButton(Assets.getIcon(Icons.LOAD));
-        saveFileBtn = new VisImageButton(Assets.getIcon(Icons.SAVE));
-
-        openFileBtn.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                openFileChooser.setDirectory(new File(""));
-                uiStage.addActor(openFileChooser.fadeIn());
-            }
-        });
-        saveFileBtn.addListener(new ClickListener(){
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                saveFileChooser.setDirectory(new File(""));
-                uiStage.addActor(saveFileChooser.fadeIn());
-            }
-        });
 
         addGenericBtn = new VisImageButton(Assets.getIcon(Icons.LAYER_ADD));
         new Tooltip(addGenericBtn, "Adds a new Use case element");
@@ -124,9 +56,7 @@ public class UseCaseDisplay extends GenericDisplay {
             }
         });
 
-
-
-        EventHandler.addEventToHandler("updateColour.Maindisplay", (args) -> {
+        EventHandler.addEventToHandler("updateColour.usecaseDisplay", (args) -> {
             if(currentElement == null) return;
             if(args[0] instanceof Color) {
                 currentElement.setColor((Color) args[0]);
@@ -157,8 +87,6 @@ public class UseCaseDisplay extends GenericDisplay {
 
         addButton(delElementBtn);
         addButton(addGenericBtn);
-        addButton(openFileBtn);
-        addButton(saveFileBtn);
         addButton(addActorBtn);
 
         regrowTree();
@@ -252,5 +180,6 @@ public class UseCaseDisplay extends GenericDisplay {
     @Override public void changeActiveActor(Actor a) {
         currentElement = a;
     }
+
 
 }

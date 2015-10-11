@@ -7,7 +7,10 @@ import net.ncguy.uml.display.ClassDiagramDisplay;
 import net.ncguy.uml.display.GenericDisplay;
 import net.ncguy.uml.display.UseCaseDisplay;
 import net.ncguy.uml.drawable.Assets;
+import net.ncguy.uml.event.IEvent;
 import net.ncguy.uml.global.Sprites;
+
+import java.util.HashMap;
 
 public class UMLLauncher extends Game {
 
@@ -17,7 +20,23 @@ public class UMLLauncher extends Game {
 	public static ColourWindow colourWindow;
 	public static boolean prettyJson = false;
 
+	private static HashMap<String, IEvent> launchArgs = new HashMap<>();
+
 	public UMLLauncher(String[] args) {
+		initLaunchArgs();
+        handleLaunchArgs(args);
+	}
+
+	private void initLaunchArgs() {
+        addLaunchArg("-prettyjson", (args) -> prettyJson = true);
+	}
+
+    private void addLaunchArg(String key, IEvent val) {
+        key = key.toLowerCase();
+        launchArgs.put(key, val);
+    }
+
+	private void handleLaunchArgs(String[] args) {
 		System.out.println("===============================================");
 		System.out.println("Scanning launch arguments...");
 		String argStr = "[";
@@ -30,11 +49,10 @@ public class UMLLauncher extends Game {
 		}
 		argStr = argStr.substring(0, argStr.length()-2)+"]";
 		System.out.println("Arguments: "+argStr);
+
 		for(int i = 0; i < args.length; i++) {
-			if(args[i].equalsIgnoreCase("-prettyjson")) {
-				System.out.println("PrettyJson launch argument detected, prettifying JSON builder... ");
-				prettyJson = true;
-			}
+			if(launchArgs.containsKey(args[i]))
+                launchArgs.get(args[i]).run(args, i);
 		}
 	}
 

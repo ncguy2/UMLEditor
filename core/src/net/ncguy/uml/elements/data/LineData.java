@@ -45,6 +45,15 @@ public class LineData {
 
         try {
             switch(lineType) {
+                case EXTEND: case INCLUDE:
+                    Helpers.dashedLineDraw(sprite, batch, colour,
+                            getLocalAnchorX(), getLocalAnchorY(),
+                            getRemoteAnchorX(), getRemoteAnchorY(),
+                            2, .5f);
+                    Helpers.drawArrowHead(batch, colour,
+                            new Vector2(getLocalAnchorX(), getLocalAnchorY()),
+                            new Vector2(getRemoteAnchorX(), getRemoteAnchorY()));
+                    break;
                 default:
                     Helpers.lineDraw(sprite, batch, colour,
                             getLocalAnchorX(), getLocalAnchorY(),
@@ -77,19 +86,6 @@ public class LineData {
         out += " | ";
         out += remoteActor != null ? remoteActor.data.name : "None";
         return out;
-    }
-
-    private void drawDottedLine(Color col, int dotDist, float x1, float y1, float x2, float y2) {
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Point);
-        shapeRenderer.setColor(col);
-        Vector2 vec2 = new Vector2(x2, y2).sub(new Vector2(x1, y1));
-        float length = vec2.len();
-        for(int i = 0; i < length; i += dotDist) {
-            vec2.clamp(length - i, length - i);
-            shapeRenderer.point(x1 + vec2.x, y1 + vec2.y, 0);
-        }
-        shapeRenderer.setColor(Color.WHITE);
-        shapeRenderer.end();
     }
 
     public enum LineType {

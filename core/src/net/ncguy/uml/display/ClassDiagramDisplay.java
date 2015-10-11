@@ -1,5 +1,6 @@
 package net.ncguy.uml.display;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
@@ -9,6 +10,7 @@ import net.ncguy.uml.UMLLauncher;
 import net.ncguy.uml.components.TwinTextArea;
 import net.ncguy.uml.elements.ClassElement;
 import net.ncguy.uml.elements.EditorElement;
+import net.ncguy.uml.event.EventHandler;
 
 /**
  * Created by Nick on 06/10/2015 at 11:22.
@@ -30,11 +32,19 @@ public class ClassDiagramDisplay extends GenericDisplay {
                 super.clicked(event, x, y);
                 ClassElement c = new ClassElement();
                 if(UMLLauncher.instance.getScreen() instanceof GenericDisplay)
-                    c.addListener(new GenericDisplay.SelectionListener(c, (GenericDisplay)UMLLauncher.instance.getScreen()));
+                    c.addListener(new GenericDisplay.SelectionListener(c, (GenericDisplay) UMLLauncher.instance.getScreen()));
                 addElementToStage(c);
             }
         });
-        stage.addActor(addClassBtn);
+
+        EventHandler.addEventToHandler("updateColour.ClassDiagramDisplay", (args) -> {
+            if(currentElement == null) return;
+            if(args[0] instanceof Color) {
+                currentElement.setColor((Color) args[0]);
+            }
+        });
+
+        addButton(addClassBtn);
 
         for(EditorElement e : elements) e.redraw(uiStageOffset);
     }
@@ -49,6 +59,7 @@ public class ClassDiagramDisplay extends GenericDisplay {
     @Override
     public void configureContent() {
         TwinTextArea txtArea = new TwinTextArea();
+        txtArea.setColLbls("Attributes", "Methods");
         txtArea.setLeftChangeEvent((args) -> {
             if(args == null) return;
             if(args[0] == null) return;
@@ -90,5 +101,6 @@ public class ClassDiagramDisplay extends GenericDisplay {
 //            }
 //        });
     }
+
 
 }

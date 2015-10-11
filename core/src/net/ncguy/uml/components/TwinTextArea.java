@@ -3,12 +3,15 @@ package net.ncguy.uml.components;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.utils.Align;
+import com.kotcrab.vis.ui.widget.VisLabel;
 import com.kotcrab.vis.ui.widget.VisTable;
 import com.kotcrab.vis.ui.widget.VisTextArea;
 import net.ncguy.uml.elements.ClassElement;
 import net.ncguy.uml.event.IEvent;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Nick on 09/10/2015 at 20:53,
@@ -17,6 +20,7 @@ import java.util.ArrayList;
 public class TwinTextArea extends Group {
 
     private VisTable table;
+    private VisLabel leftColLbl, rightColLbl;
     private VisTextArea leftColTxt;
     private VisTextArea rightColTxt;
 
@@ -26,11 +30,16 @@ public class TwinTextArea extends Group {
     public TwinTextArea() {
         super();
         table = new VisTable(true);
+        leftColLbl = new VisLabel();
+        rightColLbl = new VisLabel();
         leftColTxt = new VisTextArea();
         rightColTxt = new VisTextArea();
 
-        table.add(leftColTxt).width(300).height(400);
-        table.add(rightColTxt).width(300).height(400);
+        table.add(leftColLbl).width(300).align(Align.center);
+        table.add(rightColLbl).width(300).align(Align.center);
+        table.row();
+        table.add(leftColTxt).width(300).height(350);
+        table.add(rightColTxt).width(300).height(350);
 
         addActor(table);
         table.setFillParent(true);
@@ -53,18 +62,29 @@ public class TwinTextArea extends Group {
         });
     }
 
+    public void setColLbls(String left, String right) {
+        setLeftColLbl(left);
+        setRightColLbl(right);
+    }
+    public void setLeftColLbl(String txt) {
+        leftColLbl.setText(txt);
+    }
+    public void setRightColLbl(String txt) {
+        rightColLbl.setText(txt);
+    }
+
     public void setColLines(ClassElement.ClassData data) {
         setLeftColLines(data.attributes);
         setRightColLines(data.methods);
     }
 
-    public void setLeftColLines(ArrayList<String> lines) {
+    public void setLeftColLines(List<String> lines) {
         String str = "";
         for(String line : lines)
             str += line+"\n";
         leftColTxt.setText(str);
     }
-    public void setRightColLines(ArrayList<String> lines) {
+    public void setRightColLines(List<String> lines) {
         String str = "";
         for(String line : lines)
             str += line+"\n";
