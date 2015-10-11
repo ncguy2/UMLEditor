@@ -27,7 +27,7 @@ import java.util.ArrayList;
  */
 public class EditorElement extends Group implements IConfigurable {
 
-    Sprite sprite;
+    public Sprite sprite;
     public Vector2 baseLocation;
     public Vector2 baseSize;
     VisLabel baseLocationLbl;
@@ -59,6 +59,11 @@ public class EditorElement extends Group implements IConfigurable {
         }else{
             parentDisplay = parentDisplay;
         }
+    }
+
+    public void removeLine(LineData line) {
+        linedata.remove(line);
+        data.lineData.remove(line);
     }
 
     public LineData addLine() {

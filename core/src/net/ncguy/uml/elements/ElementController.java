@@ -121,6 +121,7 @@ public class ElementController extends Actor {
 
     @Override
     public void draw(Batch batch, float alpha) {
+        setZIndex(10000);
         drawActorArray(lines, batch, alpha);
         drawActorArray(cornerActors, batch, alpha);
     }
@@ -215,7 +216,6 @@ public class ElementController extends Actor {
         setY((cornerActors[BOTLEFT.ordinal()].getY() + halfCornerSize));
         setWidth(w);
         setHeight(h);
-
 
         if(controlledElement instanceof EditorElement){
             EditorElement e = (EditorElement)controlledElement;

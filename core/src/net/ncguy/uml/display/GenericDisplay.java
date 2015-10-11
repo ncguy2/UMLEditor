@@ -46,11 +46,13 @@ public class GenericDisplay implements Screen {
 
     public static WorkspaceData data = new WorkspaceData();
 
+    public GenericDisplay instance;
+
     JSONHandler jsonHandler;
     TaskMenu taskMenu;
     public Separator vertLeft;
 
-    Stage stage, uiStage;
+    public Stage stage, uiStage;
     public InputMultiplexer multiplexer;
 
     public float leftPaneWidth = 250;
@@ -87,6 +89,7 @@ public class GenericDisplay implements Screen {
     Panel leftPanelBg;
 
     public GenericDisplay() {
+        this.instance = this;
         elements = new ArrayList<>();
         controller = new ElementController(this);
         stage = new Stage(new ScreenViewport(new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight())));
@@ -144,6 +147,8 @@ public class GenericDisplay implements Screen {
                 }catch(Exception e) {
                     e.printStackTrace();
                 }
+                controller = new ElementController(instance);
+                uiStage.addActor(controller.addedToStage(uiStage));
             }
         });
         saveFileChooser = new FileChooser("Save file", FileChooser.Mode.SAVE);
@@ -165,6 +170,7 @@ public class GenericDisplay implements Screen {
             public void clicked(InputEvent event, float x, float y) {
                 openFileChooser.setDirectory(new File(""));
                 uiStage.addActor(openFileChooser.fadeIn());
+                openFileChooser.setZIndex(10000);
             }
         });
         saveFileBtn.addListener(new ClickListener() {
@@ -172,6 +178,7 @@ public class GenericDisplay implements Screen {
             public void clicked(InputEvent event, float x, float y) {
                 saveFileChooser.setDirectory(new File(""));
                 uiStage.addActor(saveFileChooser.fadeIn());
+                saveFileChooser.setZIndex(10000);
             }
         });
 
@@ -284,7 +291,6 @@ public class GenericDisplay implements Screen {
                     editorElement.redraw(uiStageOffset);
                 }
                 controller.assertBody(false);
-
             }
         });
 
@@ -484,10 +490,18 @@ public class GenericDisplay implements Screen {
 
         @Override
         public void clicked(InputEvent event, float x, float y) {
-            if(parent.currentElement != element)
-                parent.currentElement = element;
-            parent.elementsTree.setSelectedIndex(-1);
-            parent.controller.onAllocate(element);
+            if(parent == null) {
+                GenericDisplay d = UMLLauncher.instance.getDisplay();
+                if(d.currentElement != element)
+                    d.currentElement = element;
+                d.elementsTree.setSelectedIndex(-1);
+                d.controller.onAllocate(element);
+            }else{
+                if(parent.currentElement != element)
+                    parent.currentElement = element;
+                parent.elementsTree.setSelectedIndex(-1);
+                parent.controller.onAllocate(element);
+            }
         }
 
     }

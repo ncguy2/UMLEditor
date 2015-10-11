@@ -3,6 +3,7 @@ package net.ncguy.uml.components;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -17,7 +18,6 @@ import net.ncguy.uml.drawable.Icons;
 import net.ncguy.uml.elements.EditorElement;
 import net.ncguy.uml.elements.data.LineData;
 import net.ncguy.uml.event.EventHandler;
-import net.ncguy.uml.global.AnchorPoints;
 
 import java.util.ArrayList;
 
@@ -47,15 +47,19 @@ public class LineDialog extends VisWindow {
     public VisLabel nameLbl;
     public VisTextField nameTxt;
     public VisLabel localAnchorLbl;
-    public VisSelectBox<AnchorPoints> localAnchorSelect;
+    public VisTextButton localAnchorSelect;
     public VisLabel remoteAnchorLbl;
-    public VisSelectBox<AnchorPoints> remoteAnchorSelect;
+    public VisTextButton remoteAnchorSelect;
     public VisLabel remoteActorLbl;
     public VisSelectBox<EditorElement> remoteActorSelect;
     public VisLabel remoteActorNameLbl;
     public VisTextField remoteActorNameTxt;
     public VisLabel lineTypeLbl;
     public VisSelectBox<LineData.LineType> lineTypeSelect;
+
+    public AnchorSelectionWindow localAnchorSelection;
+    public AnchorSelectionWindow remoteAnchorSelection;
+
 
     public VisTextButton changeColourBtn;
 
@@ -68,6 +72,24 @@ public class LineDialog extends VisWindow {
         setVisible(false);
         setModal(false);
         initUI();
+
+//        testWindow = new AnchorSelectionWindow("Local Anchor");
+//        EventHandler.addEventToHandler(testWindow.eventId, (args) -> {
+//            if(args == null) return;
+//            if(args[0] == null) return;
+//            if(args[0] instanceof Vector2) {
+//                currentLine.localAnchor = (Vector2)args[0];
+//            }
+//        });
+//        testBtn = new VisTextButton("Anchor edit");
+//        testBtn.addListener(new ClickListener(){
+//            @Override
+//            public void clicked(InputEvent event, float x, float y) {
+//                super.clicked(event, x, y);
+//                UMLLauncher.instance.getDisplay().stage.addActor(testWindow.fadeIn());
+//            }
+//        });
+//        addActor(testBtn);
     }
 
     private void initUI() {
@@ -79,9 +101,9 @@ public class LineDialog extends VisWindow {
         nameLbl = new VisLabel("Line ID");
         nameTxt = new VisTextField("");
         localAnchorLbl = new VisLabel("Local Anchor");
-        localAnchorSelect = new VisSelectBox<>();
+        localAnchorSelect = new VisTextButton("");
         remoteAnchorLbl = new VisLabel("Remote Anchor");
-        remoteAnchorSelect = new VisSelectBox<>();
+        remoteAnchorSelect = new VisTextButton("");
         remoteActorLbl = new VisLabel("Remote Actor");
         remoteActorSelect = new VisSelectBox<>();
         remoteActorNameLbl = new VisLabel("Remote Actor Name");
@@ -90,6 +112,37 @@ public class LineDialog extends VisWindow {
         lineTypeSelect = new VisSelectBox<>();
         changeColourBtn = new VisTextButton("Change Colour");
         toggleReverseBtn = new VisTextButton("Reverse search", "toggle");
+        localAnchorSelection = new AnchorSelectionWindow("LocalAnchor");
+        remoteAnchorSelection = new AnchorSelectionWindow("RemoteAnchor");
+
+        localAnchorSelect.addListener(new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                super.clicked(event, x, y);
+                if(currentLine == null) {
+                    localAnchorSelection.xSlider.setValue(50);
+                    localAnchorSelection.ySlider.setValue(50);
+                }else{
+                    localAnchorSelection.xSlider.setValue(currentLine.getLocalAnchorX());
+                    localAnchorSelection.ySlider.setValue(currentLine.getLocalAnchorY());
+                }
+                UMLLauncher.instance.getDisplay().stage.addActor(localAnchorSelection.fadeIn());
+            }
+        });
+        remoteAnchorSelect.addListener(new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                super.clicked(event, x, y);
+                if(currentLine == null) {
+                    remoteAnchorSelection.xSlider.setValue(50);
+                    remoteAnchorSelection.ySlider.setValue(50);
+                }else{
+                    remoteAnchorSelection.xSlider.setValue(currentLine.getRemoteAnchorX());
+                    remoteAnchorSelection.ySlider.setValue(currentLine.getRemoteAnchorY());
+                }
+                UMLLauncher.instance.getDisplay().stage.addActor(remoteAnchorSelection.fadeIn());
+            }
+        });
 
         newLineBtn = new VisImageButton(Assets.getIcon(Icons.LAYER_ADD));
         delLineBtn = new VisImageButton(Assets.getIcon(Icons.LAYER_REMOVE));
@@ -117,6 +170,16 @@ public class LineDialog extends VisWindow {
                 }
             }
         });
+        reverseLineDataList.addListener(new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                super.clicked(event, x, y);
+                if(reverseLineDataList.getSelected() != null) {
+                    currentLine = reverseLineDataList.getSelected();
+                    updateSelected();
+                }
+            }
+        });
         nameTxt.addListener(new InputListener() {
             @Override
             public boolean keyTyped(InputEvent event, char character) {
@@ -129,14 +192,14 @@ public class LineDialog extends VisWindow {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 if(currentLine == null) return;
-                currentLine.localAnchor = localAnchorSelect.getSelected().offset();
+                currentLine.localAnchor = localAnchorSelection.getOffset();
             }
         });
         remoteAnchorSelect.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 if(currentLine == null) return;
-                currentLine.remoteAnchor = remoteAnchorSelect.getSelected().offset();
+                currentLine.remoteAnchor = remoteAnchorSelection.getOffset();
             }
         });
         remoteActorSelect.addListener(new ChangeListener() {
@@ -145,9 +208,13 @@ public class LineDialog extends VisWindow {
                 EditorElement remoteActor = remoteActorSelect.getSelected();
                 remoteActorNameTxt.setText(remoteActor.data.name);
                 if(currentLine == null) return;
-                if(remoteActor.equals(blankElement))
+                if(remoteActor.equals(blankElement)) {
                     currentLine.remoteActor = null;
-                else currentLine.remoteActor = remoteActor;
+                    remoteAnchorSelection.setBG(new Sprite());
+                }else{
+                    currentLine.remoteActor = remoteActor;
+                    remoteAnchorSelection.setBG(remoteActor.sprite);
+                }
             }
         });
         lineTypeSelect.addListener(new ChangeListener() {
@@ -170,11 +237,12 @@ public class LineDialog extends VisWindow {
             public void clicked(InputEvent event, float x, float y) {
                 super.clicked(event, x, y);
                 if(currentLine == null) return;
+                currentElement.removeLine(currentLine);
                 lineCollection.remove(currentLine);
                 populateList();
             }
         });
-        toggleReverseBtn.addListener(new ClickListener(){
+        toggleReverseBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 super.clicked(event, x, y);
@@ -183,17 +251,35 @@ public class LineDialog extends VisWindow {
                 }else{
                     lineScrollPane.setWidget(reverseLineDataList);
                 }
-                System.out.println("Current Scrollable element: "+lineScrollPane.getWidget().toString());
+                System.out.println("Current Scrollable element: " + lineScrollPane.getWidget().toString());
                 populateList();
             }
         });
+        EventHandler.addEventToHandler(localAnchorSelection.eventId, (args) -> {
+            if(args == null) return;
+            if(args[0] == null) return;
+            if(currentLine == null) return;
+            if(args[0] instanceof Vector2) {
+                Vector2 vec = (Vector2) args[0];
+                currentLine.localAnchor = vec;
+                localAnchorSelect.setText(vec.toString());
+            }
+        });
+        EventHandler.addEventToHandler(remoteAnchorSelection.eventId, (args) -> {
+            if(args == null) return;
+            if(args[0] == null) return;
+            if(currentLine == null) return;
+            if(args[0] instanceof Vector2) {
+                Vector2 vec = (Vector2) args[0];
+                currentLine.remoteAnchor = vec;
+                remoteAnchorSelect.setText(vec.toString());
+            }
+        });
 
-        localAnchorSelect.setItems(AnchorPoints.values());
-        remoteAnchorSelect.setItems(AnchorPoints.values());
         lineTypeSelect.setItems(LineData.LineType.values());
         
         float fieldX = 250;
-        
+
         formTable.add(nameLbl).align(Align.right);
         formTable.add(nameTxt).width(fieldX);
         formTable.row();
@@ -241,7 +327,7 @@ public class LineDialog extends VisWindow {
         newLineBtn.setBounds(204, (getHeight()-getPadTop())-32, 30, 30);
         delLineBtn.setBounds(204, (getHeight()-getPadTop())-64, 30, 30);
         changeColourBtn.setBounds(204, 2, 150, 30);
-        toggleReverseBtn.setBounds(204, (getHeight()-getPadTop())-96, 150, 30);
+        toggleReverseBtn.setBounds(204, (getHeight() - getPadTop()) - 96, 150, 30);
         super.draw(batch, parentAlpha);
     }
 
@@ -249,6 +335,8 @@ public class LineDialog extends VisWindow {
         this.currentElement = editorElement;
         this.lineCollection = editorElement.linedata;
         this.currentLine = null;
+        localAnchorSelection.setBG(currentElement.sprite);
+        remoteAnchorSelection.setBG(new Sprite());
         populateList();
     }
 
@@ -267,8 +355,10 @@ public class LineDialog extends VisWindow {
         ArrayList<LineData> revLineIndex = new ArrayList<>();
         index = 0;
         for(LineData d : lineIndex) {
-            if(!d.parentActor.equals(currentElement) && d.remoteActor.equals(currentElement))
-                revLineIndex.add(d);
+            try {
+                if(!d.parentActor.equals(currentElement) && d.remoteActor.equals(currentElement))
+                    revLineIndex.add(d);
+            }catch(Exception e) {}
         }
         LineData[] revData = new LineData[revLineIndex.size()];
         for(LineData d : revLineIndex)
@@ -284,33 +374,63 @@ public class LineDialog extends VisWindow {
 
     public void updateSelected() {
         try {
-            EditorElement[] es = new EditorElement[UMLLauncher.instance.getDisplay().elements.size()];
+            EditorElement[] es = new EditorElement[UMLLauncher.instance.getDisplay().elements.size()+1];
             es[0] = blankElement;
             int index = 1;
+
             for(EditorElement e : UMLLauncher.instance.getDisplay().elements) {
-                if(e != currentElement)
-                    es[index++] = e;
+                es[index++] = e;
+//                if(toggleReverseBtn.isChecked()) {
+//                    es[index++] = e;
+//                }else{
+//                    if(e != currentElement)
+//                        es[index++] = e;
+//                }
             }
             remoteActorSelect.setItems(es);
         }catch(Exception e) {
-
-
+            e.printStackTrace();
         }
         if(this.lineDataList.getSelectedIndex() >= 0) {
             if(this.lineDataList.getSelected() != null) {
                 currentLine = this.lineDataList.getSelected();
                 nameTxt.setText(currentLine.name);
-                localAnchorSelect.setSelected(AnchorPoints.getPointFromVector(currentLine.localAnchor));
-                remoteAnchorSelect.setSelected(AnchorPoints.getPointFromVector(currentLine.remoteAnchor));
+                localAnchorSelect.setText(currentLine.localAnchor.toString());
+                remoteAnchorSelect.setText(currentLine.remoteAnchor.toString());
                 remoteActorSelect.setSelected(currentLine.remoteActor);
                 remoteActorNameTxt.setText(remoteActorSelect.getSelected().data.name);
                 lineTypeSelect.setSelected(currentLine.lineType);
+
+                if(currentLine.remoteActor != null) {
+                    if(currentLine.parentActor != null) localAnchorSelection.setBG(currentLine.parentActor.sprite);
+                    else localAnchorSelection.setBG(currentElement.sprite);
+                    remoteAnchorSelection.setBG(currentLine.remoteActor.sprite);
+                }else remoteAnchorSelection.setBG(new Sprite());
+
+                return;
+            }
+        }else if(this.reverseLineDataList.getSelectedIndex() >= 0) {
+            if(this.reverseLineDataList.getSelected() != null) {
+                currentLine = this.reverseLineDataList.getSelected();
+                nameTxt.setText(currentLine.name);
+                localAnchorSelect.setText(currentLine.localAnchor.toString());
+                remoteAnchorSelect.setText(currentLine.remoteAnchor.toString());
+                remoteActorSelect.setSelected(currentLine.remoteActor);
+                remoteActorNameTxt.setText(remoteActorSelect.getSelected().data.name);
+                lineTypeSelect.setSelected(currentLine.lineType);
+
+                if(currentLine.remoteActor != null) {
+                    if(currentLine.parentActor != null) localAnchorSelection.setBG(currentLine.parentActor.sprite);
+                    else localAnchorSelection.setBG(currentElement.sprite);
+                    remoteAnchorSelection.setBG(currentLine.remoteActor.sprite);
+                }else remoteAnchorSelection.setBG(new Sprite());
+
                 return;
             }
         }
         nameTxt.setText("");
-        localAnchorSelect.setSelected(AnchorPoints.MID);
-        remoteAnchorSelect.setSelected(AnchorPoints.MID);
+        localAnchorSelect.setText(new Vector2(.5f, .5f).toString());
+        remoteAnchorSelect.setText(new Vector2(.5f, .5f).toString());
         try {
             remoteActorSelect.setSelectedIndex(0);
             remoteActorNameTxt.setText(remoteActorSelect.getSelected().data.name);
