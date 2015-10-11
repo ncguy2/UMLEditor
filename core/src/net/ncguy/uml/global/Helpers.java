@@ -51,10 +51,9 @@ public class Helpers {
         arrowHead.setOrigin(arrowHead.getWidth()/2, arrowHead.getHeight()/2);
 //        arrowHead.setOrigin(0, 0);
         arrowHead.setColor(colour);
-        arrowHead.setPosition(pos2.x-(arrowHead.getWidth()/2), pos2.y-(arrowHead.getHeight()/2));
+        arrowHead.setPosition(pos2.x - (arrowHead.getWidth() / 2), pos2.y - (arrowHead.getHeight()/2));
         if(xDiff < 0) angle += 180;
         arrowHead.setRotation(angle);
         arrowHead.draw(batch);
     }
-
 }

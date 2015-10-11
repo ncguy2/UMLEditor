@@ -6,7 +6,6 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
-import com.badlogic.gdx.scenes.scene2d.ui.TextArea;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.kotcrab.vis.ui.widget.*;
 import net.ncguy.uml.UMLLauncher;
@@ -147,8 +146,8 @@ public class UseCaseDisplay extends GenericDisplay {
             public boolean keyTyped(InputEvent event, char c) {
                 if(currentElement instanceof EditorElement) {
                     EditorElement e = (EditorElement) currentElement;
-                    e.data.contents = ((TextArea)dataDialog_contents).getText();
-                }
+                    e.data.contents = ((VisTextArea)dataDialog_contents).getText();
+            }
                 return false;
             }
         });
